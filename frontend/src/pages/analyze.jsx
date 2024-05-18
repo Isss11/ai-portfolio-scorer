@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { initiateConnection } from "@/lib/api";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   input: z.string(),
@@ -37,7 +39,7 @@ export function AnalyzePage() {
       return;
     }
 
-    console.log({ username });
+    initiateConnection(username).catch((err) => toast.error(err.message));
   }
 
   const { errors } = form.formState;
