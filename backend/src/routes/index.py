@@ -25,7 +25,10 @@ def score(gh_username: str):
         yield stream_event(
             "message", {"type": "metadata", "data": get_user_info(gh_username)}
         )
-        yield stream_event("message", {"type": "score", "data": 1})
+        yield stream_event("message", {"type": "impact", "data": {}})
+        yield stream_event("message", {"type": "experience", "data": {}})
+        yield stream_event("message", {"type": "quality", "data": {}})
+        yield stream_event("message", {"type": "ability", "data": {}})
         yield stream_event("close", None)
 
     return app.response_class(generate(), mimetype="text/event-stream")
