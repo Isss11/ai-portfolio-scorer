@@ -19,9 +19,25 @@ def score_individual():
 
 @app.route("/compareProfiles", methods=["POST"])
 def compareProfiles():
+    links = []
+    
     try:
-        links = request.json['profileLinks']
+        linksString = request.json['profileLinks'].replace(" ", "")
+        links = linksString.split("\n")
+        
+        # Deal with border case to remove all empty links
+        emptyLinksRemoved = False
+        
+        while not emptyLinksRemoved:
+            try:
+                links.remove('')
+            except:
+                print("Removed all empty links, if they ever existed.")
+                emptyLinksRemoved = True
+                
     except:
-        links = []
+        print("An error has occurrred")
+        
+    print(links)
     
     return f"Placeholder response to compare users."
