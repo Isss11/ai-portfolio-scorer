@@ -1,4 +1,4 @@
-from flask import json
+from flask import json, request
 from src.app import app
 
 @app.route("/", methods=["GET"])
@@ -16,3 +16,12 @@ def score_individual():
         yield json.dumps({"score": 0})
 
     return app.response_class(generate(), mimetype="text/event-stream")
+
+@app.route("/compareProfiles", methods=["POST"])
+def compareProfiles():
+    try:
+        links = request.json['profileLinks']
+    except:
+        links = []
+    
+    return f"Placeholder response to compare users."
