@@ -1,4 +1,4 @@
-from flask import json
+from flask import json, request
 from src.app import app
 from src.github import get_user_info
 from flask_pydantic import validate
@@ -32,3 +32,28 @@ def score(gh_username: str):
         yield stream_event("close", None)
 
     return app.response_class(generate(), mimetype="text/event-stream")
+
+@app.route("/compareProfiles", methods=["POST"])
+def compareProfiles():
+    links = []
+    
+    try:
+        linksString = request.json['profileLinks'].replace(" ", "")
+        links = linksString.split("\n")
+        
+        # Deal with border case to remove all empty links
+        emptyLinksRemoved = False
+        
+        while not emptyLinksRemoved:
+            try:
+                links.remove('')
+            except:
+                print("Removed all empty links, if they ever existed.")
+                emptyLinksRemoved = True
+                
+    except:
+        print("An error has occurrred")
+        
+    print(links)
+    
+    return f"Placeholder response to compare users."

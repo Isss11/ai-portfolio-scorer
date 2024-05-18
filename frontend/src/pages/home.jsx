@@ -5,7 +5,7 @@ export function HomePage() {
   return (
     <PageContainer>
       <Navbar />
-      home page
+      Home Page
     </PageContainer>
   );
 }

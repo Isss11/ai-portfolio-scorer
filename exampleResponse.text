@@ -1,0 +1,3 @@
+9/10
+
+The code is well-indented and easy to read. The only issue is that the `import` statements in the `<script>` block are not indented.
