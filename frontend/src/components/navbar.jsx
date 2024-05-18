@@ -19,6 +19,11 @@ export function Navbar() {
             <Link to="/analyze">Analyze</Link>
           </Button>
         </li>
+        <li>
+          <Button asChild size="sm" variant="link">
+            <Link to="/compare">Compare</Link>
+          </Button>
+        </li>
       </ul>
     </nav>
   );

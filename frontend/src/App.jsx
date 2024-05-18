@@ -1,5 +1,6 @@
 import { HomePage } from "./pages/home.jsx";
 import { AnalyzePage } from "./pages/analyze.jsx";
+import { ComparePage } from "./pages/compare.jsx"
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -12,6 +13,10 @@ const router = createBrowserRouter([
     path: "/analyze",
     element: <AnalyzePage />,
   },
+  {
+    path: "/compare",
+    element: <ComparePage />
+  }
 ]);
 
 function App() {
