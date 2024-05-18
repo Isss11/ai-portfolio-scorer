@@ -4,8 +4,7 @@ import { Input } from "@/components/ui/input";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { initiateConnection } from "@/lib/api";
-import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const formSchema = z.object({
   input: z.string(),
@@ -18,6 +17,8 @@ export function AnalyzePage() {
       input: "",
     },
   });
+
+  const navigate = useNavigate();
 
   function onSubmit(data) {
     const { input } = data;
@@ -39,7 +40,7 @@ export function AnalyzePage() {
       return;
     }
 
-    initiateConnection(username).catch((err) => toast.error(err.message));
+    navigate(`/user/${username}`);
   }
 
   const { errors } = form.formState;

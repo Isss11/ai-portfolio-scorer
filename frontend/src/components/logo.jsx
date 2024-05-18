@@ -6,7 +6,7 @@ export function AppLogo({ className, ...props }) {
     <img
       src={logo}
       alt="Pyrometric Logo"
-      className={cn("h-12 w-12 scale-110 overflow-hidden", className)}
+      className={cn("h-8 w-8 scale-[2] overflow-hidden", className)}
       {...props}
     />
   );
