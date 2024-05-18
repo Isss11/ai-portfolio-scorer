@@ -1,6 +1,7 @@
 import { HomePage } from "./pages/home.jsx";
 import { AnalyzePage } from "./pages/analyze.jsx";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { Toaster } from "@/components/ui/sonner";
 
 const router = createBrowserRouter([
   {
@@ -14,7 +15,12 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <>
+      <RouterProvider router={router} />
+      <Toaster />
+    </>
+  );
 }
 
 export default App;
