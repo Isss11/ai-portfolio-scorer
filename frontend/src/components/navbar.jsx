@@ -1,6 +1,6 @@
-import { Flame } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
+import { AppLogo } from "./logo";
 
 export function Navbar() {
   return (
@@ -9,7 +9,8 @@ export function Navbar() {
         <li>
           <Button asChild size="sm" variant="ghost">
             <Link to="/" className="flex gap-1">
-              <Flame className="text-red-500" /> Pyrometric
+              <AppLogo />
+              Pyrometric
             </Link>
           </Button>
         </li>
