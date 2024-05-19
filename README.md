@@ -37,9 +37,11 @@ After installing all the dependencies cited above (many can be installed by simp
 ### Back-end
 
 > `cd backend`
+
 > `python main.py`
 
 ### Front-end
 
 > `cd frontend`
+
 > `pnpm dev`
