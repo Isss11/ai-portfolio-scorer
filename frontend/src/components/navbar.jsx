@@ -8,7 +8,7 @@ export function Navbar() {
       <ul className="flex gap-3 p-3">
         <li>
           <Button asChild size="sm" variant="ghost">
-            <Link to="/" className="flex gap-1">
+            <Link to="/analyze" className="flex gap-1">
               <AppLogo />
               Pyrometric
             </Link>

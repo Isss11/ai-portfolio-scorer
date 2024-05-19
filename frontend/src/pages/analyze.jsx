@@ -42,9 +42,11 @@ export function AnalyzePage() {
   return (
     <PageContainer>
       <Navbar />
+
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-1">
         <main className="mx-auto flex w-full max-w-[700px] flex-1 flex-col items-center justify-center gap-10 p-5">
-          <h1 className="text-3xl font-bold">Analyze a GitHub user</h1>
+          <h1 className="text-4xl font-bold">Evaluate GitHub Portfolios using AI.</h1>
+          <h2 className="text-3xl font-bold">Analyze a GitHub user</h2>
           <div className="flex w-full flex-col gap-2">
             <Input
               placeholder="GitHub URL or username"
