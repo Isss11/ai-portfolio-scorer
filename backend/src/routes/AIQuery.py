@@ -23,13 +23,36 @@ class AIQuery:
 
         return genai.GenerativeModel("gemini-pro")
 
+    def generate_impact_feedback(self, score):
+        query = f"""
+I scored {score} out of 100 for impact on my GitHub profile. The impact rubric is based on
+the number of stars, forks, and contributions to repositories. Based on my score, describe
+what achievements I have made, or provide feedback on what I can do to improve my impact.
+
+Write 1-3 short sentences with each sentence on a new line.
+        """.strip()
+
+        note = llm.generate_content(query).text
+
+        def remove_dash(note):
+            if note.startswith("- "):
+                return note[2:]
+            return note
+
+        feedback = note.split("\n")
+        feedback = [
+            remove_dash(line) for line in feedback if line
+        ]  # filter out empty lines
+
+        return feedback
+
     def getNote(self, category, score):
         # category = "impact"
         objectFormat = {
             "note": "A note is here.",
         }
 
-        query = f"Can you give a message about my score of {score} out of 100 for my overall '{category}' on GitHub in 8 words or less. It should not have any apostrophes. The response should be in the format:\n {objectFormat}"
+        query = f"I scored {score} out of 100 for my overall '{category}' on GitHub in 8 words or less. It should not have any apostrophes. The response should be in the format:\n {objectFormat}"
 
         note = llm.generate_content(query).text
 

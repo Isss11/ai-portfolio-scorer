@@ -176,14 +176,13 @@ def get_user_popularity(username, ai_prompt=True):
 
     popularity_score = round(200 / (1 + math.exp(-0.02 * total_popularity)) - 100)
 
+    feedback = []
     if ai_prompt:
         # Creating a Gemini instance to query for popularity score feedback
         gemini = AIQuery()
-        feedback_message = gemini.getNote("software impact", popularity_score)
-    else:
-        feedback_message = ""
+        feedback = gemini.generate_impact_feedback(popularity_score)
 
-    return {"score": popularity_score, "feedback": [feedback_message]}
+    return {"score": popularity_score, "feedback": feedback}
 
 
 @ttl_cache
