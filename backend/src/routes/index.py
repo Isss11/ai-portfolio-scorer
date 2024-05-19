@@ -1,7 +1,8 @@
-from flask import json
+from flask import json, request
 from pydantic import BaseModel
 from src.app import app
-from src.github import get_user_info
+from src.github import get_user_info, get_repo_list, filter_repos_by_languages, get_files_to_scrape, retrieve_files
+from src.routes.AIScorer import AIScorer
 from flask_pydantic import validate
 import time
 
@@ -11,9 +12,23 @@ def index():
     return f"Welcome to PyroMetric backend!"
 
 
-@app.route("/generalFeedback", methods=["POST"])
-def generalFeedback():
-    return f"Placeholder to query the Gemini API"
+@app.route("/feedback", methods=["POST"])
+def feedback():
+    link = request.json['link']
+    languages = request.json['languages']
+    
+    # String splits github address and gets username
+    username = link.split("/")[-1]
+    
+    repos = get_repo_list(username)
+    language_repo_dict = filter_repos_by_languages(username, repos, languages, limit=1)
+    files = get_files_to_scrape(username, language_repo_dict)
+    file_content = retrieve_files(username, files)
+    scorer = AIScorer()
+    stringifiedFiles = scorer.getStringifiedFiles(file_content)
+    feedback = scorer.getFeedback(stringifiedFiles)
+    
+    return feedback
 
 
 def stream_event(event, data):
