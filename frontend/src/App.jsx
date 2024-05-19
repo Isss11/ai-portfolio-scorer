@@ -1,14 +1,14 @@
 import { ComparePage } from "./pages/compare.jsx";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
-import { AnalyzePage } from "./pages/analyze.jsx";
+import { HomePage } from "./pages/home.jsx";
 import { UserPage } from "./pages/user.jsx";
 import { CompareResultsPage } from "./pages/compare-results.jsx";
 
 const router = createBrowserRouter([
   {
-    path: "/analyze",
-    element: <AnalyzePage />,
+    path: "/",
+    element: <HomePage />,
   },
   {
     path: "/compare",

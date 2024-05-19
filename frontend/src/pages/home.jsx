@@ -12,7 +12,7 @@ const formSchema = z.object({
   input: z.string(),
 });
 
-export function AnalyzePage() {
+export function HomePage() {
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -46,7 +46,9 @@ export function AnalyzePage() {
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-1">
         <main className="mx-auto flex w-full max-w-[500px] flex-1 flex-col items-stretch justify-center gap-10 p-5 text-center">
-          <h1 className="text-4xl font-bold">Evaluate GitHub Portfolios using AI.</h1>
+          <h1 className="text-4xl font-bold">
+            Evaluate GitHub Portfolios using AI 🔥
+          </h1>
           <h1 className="text-3xl font-bold">Analyze a GitHub user</h1>
           <div className="flex w-full flex-col gap-2">
             <Input
