@@ -3,6 +3,7 @@ import os
 import re
 from datetime import datetime
 import base64
+from routes.AIScorer import AIScorer
 
 from config import GITHUB_TOKEN
 
@@ -145,7 +146,7 @@ def filter_repos_by_languages(username, token, repo_list, languages, limit=None)
         for language in languages:
             repos_by_language[language] = []
 
-    print(f"{repo_list=}")
+    # print(f"{repo_list=}")
     for repo in repo_list:
         repo_languages = get_repo_languages(username, token, repo['name'])
         
@@ -250,10 +251,19 @@ if __name__ == "__main__":
     # Get repos
     repos = get_repo_list(username, token)
     language_repo_dict = filter_repos_by_languages(username, token, repos, languages, limit=1)
-    print(f"{language_repo_dict=}")
+    # print(f"{language_repo_dict=}")
 
     # Get file content
     files = get_files_to_scrape(username, token, language_repo_dict)
-    print(f"{files=}")
+    # print(f"{files=}")
     file_content = retrieve_files(username, token, files)
-    print(f"{file_content=}")
+    # print(f"{file_content=}")
+    
+    # print(file_content)
+    
+    # Scoring the stringified files
+    scorer = AIScorer()
+    stringifiedFiles = scorer.getStringifiedFiles(file_content)
+    grades = scorer.getFeedback(stringifiedFiles)
+    
+    print(grades)
