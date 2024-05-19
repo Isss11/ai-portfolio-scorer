@@ -8,7 +8,7 @@ jsonQueryExample = {
     "readability": 5,
     "bestProgrammingPractices": 7,
     "maintainability": 3,
-    "feedback": "Feedback is written here.",
+    "feedback": "Some of the functions in your code could be exhibit better encapsulation.",
 }
 
 llm: genai.GenerativeModel = None  # type: ignore
@@ -45,7 +45,7 @@ class AIQuery:
 Score the following code from different files on code readability with an integer, with the maximum value being 10.
 Then score the following code on best programming practices for the given programming language (such as object-oriented programming if the programming language used is Java, Kotlin, or another OOP language) with an integer, with the maximum value being 10.
 Than score the following code on maintainability with an integer, with the maximum value being 10.
-Also provide some general feedback on the code itself in a 'feedback' object -- it should be a maximum of 25 words and should contain no quotes (single or double).
+Also provide some general feedback on the code itself in a 'feedback' object. The feedback must be a maximum of 1 sentence and should contain no quotes (single or double).
 Return it as a JSON object exactly as in this example:
 {jsonQueryExample}
 The code to score is:
@@ -69,6 +69,10 @@ The code to score is:
         # This pattern matches a string that starts with '{' and ends with '}'
         pattern = r"\{[^{}]*\}"
         text = text_response.replace("'", '"')
+        text = text.replace("`", "")
+        
+        print("Feedback after adjustments.")
+        print(text)
 
         matches = re.finditer(pattern, text)
         json_objects = []
@@ -81,12 +85,18 @@ The code to score is:
                 json_objects.append(json_obj)
             except json.JSONDecodeError:
                 # Extend the search for nested structures
-                extended_json_str = self.extend_search(text_response, match.span())
+                text = text_response.replace("'", '"')
+                text = text.replace("`", "")
+                
+                print("First exception.")
+                
+                extended_json_str = self.extend_search(text, match.span())
                 try:
                     json_obj = json.loads(extended_json_str)
                     json_objects.append(json_obj)
                 except json.JSONDecodeError:
                     # Handle cases where the extraction is not valid JSON
+                    print("Second exception.")
                     continue
 
         if json_objects:
