@@ -2,9 +2,13 @@ import requests
 import collections
 from datetime import datetime
 import base64
+
+from .ttl_cache import TTLCache
 from .routes.AIQuery import AIQuery
 import math
 from .config import GITHUB_TOKEN
+
+ttl_cache = TTLCache(5 * 60)
 
 FILE_TYPES = {
     "C": (".c", ".h"),
@@ -57,6 +61,7 @@ def flatten(l):
     return [item for sublist in l for item in sublist]
 
 
+@ttl_cache
 def get_user_info(username):
     url = f"https://api.github.com/users/{username}"
     headers = {
@@ -71,6 +76,7 @@ def get_user_info(username):
 
 
 # Sourced from https://github.com/anuraghazra/github-readme-stats
+@ttl_cache
 def get_user_top_languages(username):
     url = "https://api.github.com/graphql"
     query = """
@@ -126,6 +132,7 @@ query userInfo($login: String!) {
     return sorted_langs
 
 
+@ttl_cache
 def get_user_popularity(username, ai_prompt=True):
     url = "https://api.github.com/graphql"
     query = """
@@ -169,7 +176,7 @@ def get_user_popularity(username, ai_prompt=True):
 
     popularity_score = round(200 / (1 + math.exp(-0.02 * total_popularity)) - 100)
 
-    if ai_prompt:  
+    if ai_prompt:
         # Creating a Gemini instance to query for popularity score feedback
         gemini = AIQuery()
         feedback_message = gemini.getNote("software impact", popularity_score)
@@ -179,57 +186,7 @@ def get_user_popularity(username, ai_prompt=True):
     return {"score": popularity_score, "feedback": [feedback_message]}
 
 
-def get_user_quality2(username):
-    url = "https://api.github.com/graphql"
-    query = """
-        query userQuality($login: String!) {
-            user(login: $login) {
-                repositories(first: 25, orderBy: {field:PUSHED_AT,direction: DESC}) {
-                    nodes {
-                        name
-                        forks {
-                            totalCount
-                        }
-                        watchers {
-                            totalCount
-                        }
-                        stargazers {
-                            totalCount
-                        }
-                    }
-                }
-            }
-        }
-        """
-
-    variables = {"login": username}
-
-    repos = get_repo_list(username)
-    body = {"query": query, "variables": variables}
-    headers = {
-        "Authorization": f"token {GITHUB_TOKEN}",
-    }
-
-    response = requests.post(url, json=body, headers=headers)
-    result = response.json()
-
-    repositories = result["data"]["user"]["repositories"]["nodes"]
-    total_popularity = 0
-
-    for repo in repositories:
-        total_popularity += 2 * repo["forks"]["totalCount"]
-        total_popularity += repo["watchers"]["totalCount"]
-        total_popularity += repo["stargazers"]["totalCount"]
-
-    popularity_score = round(200 / (1 + math.exp(-0.02 * total_popularity)) - 100)
-
-    # Creating a Gemini instance to query for popularity score feedback
-    gemini = AIQuery()
-    feedback_message = gemini.getNote("software impact", popularity_score)
-
-    return {"score": popularity_score, "feedback": [feedback_message]}
-
-
+@ttl_cache
 def get_user_exerience(username, ai_prompt=True):
     profile_data = get_user_top_languages(username)
     total_experience = 0
@@ -250,6 +207,7 @@ def get_user_exerience(username, ai_prompt=True):
     return {"score": experience_score, "feedback": [note]}
 
 
+@ttl_cache
 def get_user_quality(username):
     top_three_languages = get_user_top_languages(username)[:2]
     languages = []
