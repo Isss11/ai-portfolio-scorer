@@ -1,7 +1,7 @@
 from flask import json, request
 from pydantic import BaseModel
 from src.app import app
-from src.github import get_user_info, get_repo_list, filter_repos_by_languages, get_files_to_scrape, retrieve_files
+from src.github import get_user_info, get_user_top_languages, get_repo_list, filter_repos_by_languages, get_files_to_scrape, retrieve_files
 from src.routes.AIScorer import AIScorer
 from flask_pydantic import validate
 import time
@@ -42,7 +42,10 @@ def score(gh_username: str):
         yield stream_event(
             "message", {"type": "metadata", "data": get_user_info(gh_username)}
         )
-        time.sleep(0.5)  # simulate delay
+        yield stream_event(
+            "message",
+            {"type": "languages", "data": get_user_top_languages(gh_username)},
+        )
         impact_data = {
             "score": 43,
             "feedback": [

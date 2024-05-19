@@ -1,6 +1,5 @@
 import requests
-import os
-import re
+import collections
 from datetime import datetime
 import base64
 from .routes.AIScorer import AIScorer
@@ -54,6 +53,10 @@ FILE_TYPES = {
 }
 
 
+def flatten(l):
+    return [item for sublist in l for item in sublist]
+
+
 def get_user_info(username):
     url = f"https://api.github.com/users/{username}"
     headers = {
@@ -66,26 +69,80 @@ def get_user_info(username):
     data = response.json()
     return data
 
+
+# Sourced from https://github.com/anuraghazra/github-readme-stats
+def get_user_top_languages(username):
+    url = "https://api.github.com/graphql"
+    query = """
+query userInfo($login: String!) {
+    user(login: $login) {
+        # fetch only owner repos & not forks
+        repositories(ownerAffiliations: OWNER, isFork: false, first: 100) {
+            nodes {
+                name
+                languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
+                    edges {
+                        size
+                        node {
+                            color
+                            name
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+    """
+
+    variables = {"login": username}
+
+    body = {"query": query, "variables": variables}
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+    }
+
+    response = requests.post(url, json=body, headers=headers)
+    data = response.json()
+
+    lang_sizes = collections.defaultdict(int)
+
+    def map_repo_node(repo):
+        return repo["languages"]["edges"]
+
+    repos = data["data"]["user"]["repositories"]["nodes"]
+
+    for lang in flatten(map(map_repo_node, repos)):
+        key = (lang["node"]["name"], lang["node"]["color"])
+        lang_sizes[key] += lang["size"]
+
+    sorted_langs = sorted(lang_sizes.items(), key=lambda x: x[1], reverse=True)
+
+    def map_lang(lang):
+        return {"name": lang[0][0], "color": lang[0][1]}
+
+    sorted_langs = list(map(map_lang, sorted_langs))
+
+    return sorted_langs[:3]
+
+
 def get_user_popularity(username):
     repos = get_repo_list(username)
 
     total_popularity = 0
     for repo in repos:
-        total_popularity += repo['popularity']
-    
+        total_popularity += repo["popularity"]
+
     popularity_score = 200 / (1 + math.exp(-0.01 * total_popularity)) - 100
 
-    
-    
-    return {
-        "score": popularity_score
-    }
+    return {"score": popularity_score}
+
 
 def get_all_user_repos(username):
     url = f"https://api.github.com/users/{username}/repos"
     headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github.v3+json"
+        "Accept": "application/vnd.github.v3+json",
     }
     repos = []
 
@@ -106,6 +163,7 @@ def get_all_user_repos(username):
             break
 
     return repos
+
 
 def get_repo_list(username):
     repo_list = []
@@ -149,6 +207,7 @@ def calculate_repo_popularity(repo):
 def parse_github_time_str(date_str):
     return datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%SZ")
 
+
 def filter_repos_by_languages(username, repo_list, languages, limit=None):
     repos_by_language = {}
 
@@ -160,9 +219,8 @@ def filter_repos_by_languages(username, repo_list, languages, limit=None):
 
     # print(f"{repo_list=}")
     for repo in repo_list:
+        repo_languages = get_repo_languages(username, repo["name"])
 
-        repo_languages = get_repo_languages(username, repo['name'])
-        
         for language in repo_languages:
             try:
                 if limit == None or len(repos_by_language[language]) < limit:
@@ -172,11 +230,12 @@ def filter_repos_by_languages(username, repo_list, languages, limit=None):
 
     return repos_by_language
 
+
 def get_repo_languages(username, repo):
     url = f"https://api.github.com/repos/{username}/{repo}/languages"
     headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github.v3+json"
+        "Accept": "application/vnd.github.v3+json",
     }
     response = requests.get(url, headers=headers)
 
@@ -185,6 +244,7 @@ def get_repo_languages(username, repo):
     else:
         print(f"Failed to retrieve languages: {response.status_code}")
         return None
+
 
 def get_files_to_scrape(username, language_repo_dict):
     files = {}
@@ -200,23 +260,25 @@ def get_files_to_scrape(username, language_repo_dict):
 
     return files
 
+
 def locate_files(username, repo_name, language, files, path=""):
     url = f"https://api.github.com/repos/{username}/{repo_name}/contents/{path}"
     headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github.v3+json"
+        "Accept": "application/vnd.github.v3+json",
     }
 
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
         contents = response.json()
         for item in contents:
-            if item['type'] == 'file' and item['path'].endswith(FILE_TYPES[language]):
-                files.append(item['path'])
-            elif item['type'] == 'dir':
-                locate_files(username, repo_name, language, files, item['path'])
+            if item["type"] == "file" and item["path"].endswith(FILE_TYPES[language]):
+                files.append(item["path"])
+            elif item["type"] == "dir":
+                locate_files(username, repo_name, language, files, item["path"])
     else:
         print(f"Failed to retrieve contents: {response.status_code}")
+
 
 def retrieve_files(username, repo_files_dict):
     raw_file_content = {}
@@ -224,18 +286,21 @@ def retrieve_files(username, repo_files_dict):
     for language, location in repo_files_dict.items():
         repo = location["repo"]
         raw_file_content[language] = {"repo": repo, "files": []}
-        
-        for path in location['files']:
+
+        for path in location["files"]:
             raw_code = retrieve_file_from_repo(username, repo, path)
-            raw_file_content[language]["files"].append({"name": path, "content": raw_code})
-    
+            raw_file_content[language]["files"].append(
+                {"name": path, "content": raw_code}
+            )
+
     return raw_file_content
+
 
 def retrieve_file_from_repo(username, repo, path):
     url = f"https://api.github.com/repos/{username}/{repo}/contents/{path}"
     headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github.v3+json"
+        "Accept": "application/vnd.github.v3+json",
     }
 
     response = requests.get(url, headers=headers)
@@ -275,5 +340,5 @@ if __name__ == "__main__":
     scorer = AIScorer()
     stringifiedFiles = scorer.getStringifiedFiles(file_content)
     grades = scorer.getFeedback(stringifiedFiles)
-    
+
     print(grades)

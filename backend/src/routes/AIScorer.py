@@ -3,19 +3,11 @@ import google.generativeai as genai
 import re
 import json
 
-exampleJSON = {
-    "readability": {
-    "score": 8,
-    "feedback": "test.py is generally well-formatted and uses clear variable names. Docstrings are present, but type hints could improve readability further. Consider using a dictionary comprehension in getGeneralInfo for a more concise approach."
-    },
-    "bestProgrammingPractices": {
-    "score": 7,
-    "feedback": "myapp.java demonstrates basic OOP concepts like encapsulation and abstraction. However, reusability can be improved by adding methods for retrieving more data or calculations. Test.vue has doesn't not use OOP concepts, but that is fine since OOP is not as important in JavaScript programming. Some additional best coding pracitices were followed, such as modularity."
-    },
-    "maintainability": {
-    "score": 8,
-    "feedback": "The code has good modularity due to the class structure. Error handling and unit tests would further enhance maintainability."
-    }
+jsonQueryExample = {
+    "readability": 8,
+    "bestProgrammingPractices": 7,
+    "maintainability": 8,
+    "feedback": "The code looks well documented and commented. Some of the Java code could have better encapsulation."
 }
 
 class AIScorer:
@@ -32,24 +24,12 @@ class AIScorer:
         
     # Obtains a JSON response on a variety of grades from Gemini
     def getFeedback(self, stringifiedFiles):
-        query = f"""Score the following code from different files on code readability out of 10, in the format "Readability: a number/10". Than score the following code on best programming practices for the given programming language (such as object-oriented programming if the programming language used is Java, Kotlin, or another OOP language) out of 10, in the format "bestCodingPractices: a number/10". Than score the following code on maintainability out of 10, in the format "Maintainability: a number/10".  Return it as a JSON object (with the feedback included) in the format and list that at the top of the response. Do not include "```json" in the response. Output any feedback as the value under a 'feedback' key under each score key and list any filenames (e.g. 'test.py') for code examples. Feedback values should be a minimum of 2 sentences and should not include any apostrophes. An example of the desired JSON output is below. Score all the files with a single score.\n {str(exampleJSON)}\n{stringifiedFiles}"""
+        query = f"""Score the following code from different files on code readability out of 10, in the format "Readability: a number/10". Than score the following code on best programming practices for the given programming language (such as object-oriented programming if the programming language used is Java, Kotlin, or another OOP language) out of 10, in the format "bestCodingPractices: a number/10". Than score the following code on maintainability out of 10, in the format "Maintainability: a number/10".  Return it as a JSON object in the format of this example:\n {jsonQueryExample}\nThe code to score is:\n {stringifiedFiles}"""
 
-        feedback = self.llm.generate_content(query).text
-        
-        print(feedback)
-        print(feedback[4])
-        
-        # Removing initial part of response
-        if feedback[3] == 'j':
-            feedback = feedback[9:-4]
-        elif feedback[3] == '`':
-            feedback = feedback[4:-4]
-            
-        # TODO: Find a better solutions for this to replace (regular expression)
-        feedback = feedback.replace("'", '"')
-        
-        feedback = self.extract_json(feedback)[0]
-        
+        feedback = self.llm.generate_content(query)
+        feedback = feedback.text
+        feedback = self.extract_json(feedback)
+
         return feedback
     
     # Reference for JSON fix: https://learnwithhasan.com/consistent-json-gemini-python/
@@ -57,7 +37,7 @@ class AIScorer:
         # This pattern matches a string that starts with '{' and ends with '}'
         pattern = r'\{[^{}]*\}'
 
-        matches = re.finditer(pattern, text_response)
+        matches = re.finditer(pattern, text_response.replace("'", '"'))
         json_objects = []
 
         for match in matches:
@@ -103,8 +83,6 @@ class AIScorer:
             files = fileContent[language]['files']
             
             for file in files:
-                stringifiedFiles += file['name']
-                stringifiedFiles += "\n\n"
                 stringifiedFiles += file['content']
                 stringifiedFiles += "\n\n"
             
