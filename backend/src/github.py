@@ -3,9 +3,9 @@ import os
 import re
 from datetime import datetime
 import base64
-from src.routes.AIScorer import AIScorer
+from .routes.AIScorer import AIScorer
 import math
-from src.config import GITHUB_TOKEN
+from .config import GITHUB_TOKEN
 
 FILE_TYPES = {
     "C": (".c", ".h"),
