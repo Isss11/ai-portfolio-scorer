@@ -2,7 +2,7 @@ import requests
 import collections
 from datetime import datetime
 import base64
-from .routes.AIScorer import AIScorer
+from .routes.AIQuery import AIQuery
 import math
 from .config import GITHUB_TOKEN
 
