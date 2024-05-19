@@ -169,20 +169,13 @@ def get_user_popularity(username):
 
     popularity_score = round(200 / (1 + math.exp(-0.02 * total_popularity)) - 100)
 
-    # if popularity_score <= 20:
-    #     feedback_message = f"Your GitHub journey is just beginning. Every star counts, and you're on your way to making an impact. Keep coding and sharing your projects!"
-    # elif popularity_score <= 40:
-    #     feedback_message = "Nice progress! Your contributions are starting to get noticed. Keep up the good work and continue to share your innovations."
-    # elif popularity_score <= 60:
-    #     feedback_message = "Great job! Your projects are gaining recognition and making a mark in the community. Keep pushing your boundaries and building awesome stuff."
-    # elif popularity_score <= 80:
-    #     feedback_message = "Impressive! Your GitHub profile is attracting a solid following. Your hard work is paying off and resonating with others."
-    # else:
-    #     feedback_message = "Fantastic achievement! Your profile is gaining significant popularity. Your dedication and skills are truly appreciated by the community. Keep up the excellent work!"
+    # Creating a Gemini instance to query for popularity score feedback
+    gemini = AIQuery()
+    feedback_message = gemini.getNote('software impact', popularity_score)
 
     return {
         "score": popularity_score,
-        "feedback": [total_popularity]
+        "feedback": [feedback_message]
     }
 
 def get_user_exerience(username):    
@@ -193,11 +186,13 @@ def get_user_exerience(username):
         total_experience += lang['size']
 
     experience_score = round((2000000 / (1 + math.exp(-0.0000015 * total_experience)) - 1000000) / 10000)
-    print(total_experience)
+    
+    gemini = AIQuery()
+    note = gemini.getNote('programming experience', experience_score)
     
     return {
         "score": experience_score,
-        "feedback": [f"{total_experience}"]
+        "feedback": [note]
     }
 
 def get_user_quality(username):
@@ -405,11 +400,11 @@ def retrieve_file_from_repo(username, repo, path):
     # print(f"{file_content=}")
 
     # # Scoring the stringified files
-    # scorer = AIScorer()
+    # scorer = AIQuery()
     # stringifiedFiles = scorer.getStringifiedFiles(file_content)
     # grades = scorer.getFeedback(stringifiedFiles)
 
     # print(grades)
 
 if __name__ == "__main__":
-    get_user_popularity('ericbuys')
+    print(get_user_exerience('ericbuys'))

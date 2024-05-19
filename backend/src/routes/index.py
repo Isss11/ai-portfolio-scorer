@@ -1,8 +1,8 @@
 from flask import json, request
 from pydantic import BaseModel
 from src.app import app
-from src.github import get_user_info, get_user_top_languages, get_repo_list, filter_repos_by_languages, get_files_to_scrape, retrieve_files, , get_user_popularity, get_user_exerience
-from src.routes.AIScorer import AIScorer
+from src.github import get_user_info, get_user_top_languages, get_repo_list, filter_repos_by_languages, get_files_to_scrape, retrieve_files, get_user_popularity, get_user_exerience
+from src.routes.AIQuery import AIQuery
 from flask_pydantic import validate
 import time
 
@@ -24,12 +24,11 @@ def feedback():
     language_repo_dict = filter_repos_by_languages(username, repos, languages, limit=1)
     files = get_files_to_scrape(username, language_repo_dict)
     file_content = retrieve_files(username, files)
-    scorer = AIScorer()
+    scorer = AIQuery()
     stringifiedFiles = scorer.getStringifiedFiles(file_content)
     feedback = scorer.getFeedback(stringifiedFiles)
     
     return feedback
-
 
 def stream_event(event, data):
     return f"event: {event}\ndata: {json.dumps(data)}\n\n"

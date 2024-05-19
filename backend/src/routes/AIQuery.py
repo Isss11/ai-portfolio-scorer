@@ -10,7 +10,7 @@ jsonQueryExample = {
     "feedback": "Feedback is written here."
 }
 
-class AIScorer:
+class AIQuery:
     def __init__(self) -> None:
         self.llm = self.getGemini()
     
@@ -20,7 +20,22 @@ class AIScorer:
         genai.configure(api_key=self.GOOGLE_API_KEY)
         
         return genai.GenerativeModel('gemini-pro')
-
+    
+    def getNote(self, category, score):
+        category = "impact"
+        objectFormat = {
+            "note": "A note is here.",
+        }
+        
+        query = f"Can you give a message about my score of {score} out of 10 for my overall '{category}' on GitHub in 8 words or less. It should not have any apostrophes. The response should be in the format:\n {objectFormat}"
+        
+        note = self.llm.generate_content(query).text
+        
+        print(note)
+        
+        note = self.extract_json(note)
+        
+        return note[0]['note']
         
     # Obtains a JSON response on a variety of grades from Gemini
     def getFeedback(self, stringifiedFiles):
@@ -45,6 +60,8 @@ class AIScorer:
         for match in matches:
             json_str = match.group(0)
             try:
+                
+                print(json_str)
                 # Validate if the extracted string is valid JSON
                 json_obj = json.loads(json_str)
                 json_objects.append(json_obj)
