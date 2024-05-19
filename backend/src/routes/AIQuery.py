@@ -5,10 +5,8 @@ import json
 from src.config import GOOGLE_API_KEY
 
 jsonQueryExample = {
-    "readability": 5,
-    "bestProgrammingPractices": 7,
-    "maintainability": 3,
-    "feedback": "Some of the functions in your code could be exhibit better encapsulation.",
+    "score": 50,
+    "feedback": ["<Constructive feedback>"],
 }
 
 llm: genai.GenerativeModel = None  # type: ignore
@@ -42,27 +40,34 @@ class AIQuery:
     # Obtains a JSON response on a variety of grades from Gemini
     def getFeedback(self, stringifiedFiles):
         query = f"""
-Score the following code from different files on code readability with an integer, with the maximum value being 10.
-Then score the following code on best programming practices for the given programming language (such as object-oriented programming if the programming language used is Java, Kotlin, or another OOP language) with an integer, with the maximum value being 10.
-Than score the following code on maintainability with an integer, with the maximum value being 10.
-Also provide some general feedback on the code itself in a 'feedback' object. The feedback must be a maximum of 1 sentence and should contain no quotes (single or double).
-Return it as a JSON object exactly as in this example:
-{jsonQueryExample}
-The code to score is:
+Provide a score and feedback on the following code
+based on code readability, best practices, and maintainability.
+
+Use the following JSON format in your response:
+{json.dumps(jsonQueryExample)}
+
+The score represents how well the code follows these principles and is an integer between 0 and 100.
+The feedback is 1-3 sentences of broad but constructive feedback as a list of strings.
+
+The code is as follows:
+
 {stringifiedFiles}""".strip()
 
-        feedback = llm.generate_content(query)
-        feedback = feedback.text
-        
-        print("Feedback Before")
-        print(feedback)
+        generated_content = llm.generate_content(query)
+        generated_text = generated_content.text
+        print("AIQuery.getFeedback response", generated_text)
 
-        feedback = self.extract_json(feedback)
-        
-        print("Feedback After")
-        print(feedback)
+        score = 55
+        feedback = []
 
-        return feedback[0]
+        try:
+            json_feedback = json.loads(generated_text)
+            score = json_feedback.get("score", score)
+            feedback = json_feedback.get("feedback", feedback)
+        except json.JSONDecodeError:
+            pass
+
+        return {"score": score, "feedback": feedback}
 
     # Reference for JSON fix: https://learnwithhasan.com/consistent-json-gemini-python/
     def extract_json(self, text_response):
@@ -70,7 +75,7 @@ The code to score is:
         pattern = r"\{[^{}]*\}"
         text = text_response.replace("'", '"')
         text = text.replace("`", "")
-        
+
         print("Feedback after adjustments.")
         print(text)
 
@@ -87,9 +92,9 @@ The code to score is:
                 # Extend the search for nested structures
                 text = text_response.replace("'", '"')
                 text = text.replace("`", "")
-                
+
                 print("First exception.")
-                
+
                 extended_json_str = self.extend_search(text, match.span())
                 try:
                     json_obj = json.loads(extended_json_str)
@@ -130,10 +135,3 @@ The code to score is:
                 stringifiedFiles += "\n\n"
 
         return stringifiedFiles
-
-    # Takes a list of file paths and obtains a score and feedback from Gemini on a series of criteria
-    def gradeFiles(self, filePaths):
-        stringifiedFiles = self.getStringifiedFiles(filePaths)
-        feedback = self.getFeedback(stringifiedFiles, filePaths[0])
-
-        return feedback

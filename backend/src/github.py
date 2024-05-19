@@ -222,20 +222,12 @@ def get_user_quality(username):
     stringifiedFiles = scorer.getStringifiedFiles(file_content)
     feedback = scorer.getFeedback(stringifiedFiles)
 
-    avg_score = round(
-        (
-            feedback["readability"]
-            + feedback["bestProgrammingPractices"]
-            + feedback["maintainability"]
-        )
-        / 3
-        * 10
-    )
+    score = min(100, max(0, round(feedback["score"])))
 
     # print(top_three_languages)
     return {
-        "score": avg_score,
-        "feedback": [feedback["feedback"]],
+        "score": score,
+        "feedback": feedback["feedback"],
     }
 
 
@@ -419,37 +411,6 @@ def retrieve_file_from_repo(username, repo, path):
         print(f"Failed to retrieve file. Status code: {response.status_code}")
         return None
 
-
-# if __name__ == "__main__":
-#     get_user_quality('benawad')
-# if GITHUB_TOKEN is None:
-#     print("Error: GITHUB_TOKEN environment variable not set")
-#     exit()
-
-# # Get username
-# # github_profile_url = "https://github.com/Isss11"
-# # github_profile_url = "https://github.com/joelharder4?tab=repositories"
-# # github_profile_url = "https://github.com/wiwichips?page=1&tab=repositories"
-# username = "ericbuys"
-# languages = ["Python", "HTML"]
-
-# # Get repos
-# repos = get_repo_list(username)
-# language_repo_dict = filter_repos_by_languages(username, repos, languages, limit=1)
-# print(f"{language_repo_dict=}")
-
-# # Get file content
-# files = get_files_to_scrape(username, language_repo_dict)
-# print(f"{files=}")
-# file_content = retrieve_files(username, files)
-# print(f"{file_content=}")
-
-# # Scoring the stringified files
-# scorer = AIQuery()
-# stringifiedFiles = scorer.getStringifiedFiles(file_content)
-# grades = scorer.getFeedback(stringifiedFiles)
-
-# print(grades)
 
 if __name__ == "__main__":
     print(get_user_exerience("ericbuys"))
