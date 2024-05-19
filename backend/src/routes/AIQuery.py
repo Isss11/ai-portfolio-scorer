@@ -45,7 +45,7 @@ class AIQuery:
 Score the following code from different files on code readability with an integer, with the maximum value being 10.
 Then score the following code on best programming practices for the given programming language (such as object-oriented programming if the programming language used is Java, Kotlin, or another OOP language) with an integer, with the maximum value being 10.
 Than score the following code on maintainability with an integer, with the maximum value being 10.
-Also provide some general feedback on the code itself in a 'feedback' object -- it should be a maximum of 25 words.
+Also provide some general feedback on the code itself in a 'feedback' object -- it should be a maximum of 25 words and should contain no quotes (single or double).
 Return it as a JSON object exactly as in this example:
 {jsonQueryExample}
 The code to score is:
@@ -53,8 +53,14 @@ The code to score is:
 
         feedback = llm.generate_content(query)
         feedback = feedback.text
+        
+        print("Feedback Before")
+        print(feedback)
 
         feedback = self.extract_json(feedback)
+        
+        print("Feedback After")
+        print(feedback)
 
         return feedback[0]
 
@@ -70,8 +76,6 @@ The code to score is:
         for match in matches:
             json_str = match.group(0)
             try:
-
-                print(json_str)
                 # Validate if the extracted string is valid JSON
                 json_obj = json.loads(json_str)
                 json_objects.append(json_obj)
