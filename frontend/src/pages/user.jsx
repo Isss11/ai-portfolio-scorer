@@ -72,7 +72,7 @@ export function UserPage() {
       <div className="mx-auto flex w-full max-w-[800px] flex-1 flex-col gap-8 p-10 sm:flex-row">
         <div className="flex gap-4 sm:w-56 sm:flex-col">
           <Avatar className="h-24 w-24 sm:h-56 sm:w-56">
-            {metadata && <AvatarImage src={metadata["avatar_url"]} />}
+            <AvatarImage src={metadata?.["avatar_url"]} />
             <AvatarFallback />
           </Avatar>
 

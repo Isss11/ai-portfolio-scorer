@@ -1,6 +1,15 @@
-from flask import json, request
+from flask import json, make_response, request
 from src.app import app
-from src.github import get_user_info, get_user_top_languages, get_repo_list, filter_repos_by_languages, get_files_to_scrape, retrieve_files, get_user_popularity, get_user_exerience
+from src.github import (
+    get_user_info,
+    get_user_top_languages,
+    get_repo_list,
+    filter_repos_by_languages,
+    get_files_to_scrape,
+    retrieve_files,
+    get_user_popularity,
+    get_user_exerience,
+)
 from src.routes.AIQuery import AIQuery
 from flask_pydantic import validate
 import time
@@ -13,12 +22,12 @@ def index():
 
 @app.route("/feedback", methods=["POST"])
 def feedback():
-    link = request.json['link']
-    languages = request.json['languages']
-    
+    link = request.json["link"]
+    languages = request.json["languages"]
+
     # String splits github address and gets username
     username = link.split("/")[-1]
-    
+
     repos = get_repo_list(username)
     language_repo_dict = filter_repos_by_languages(username, repos, languages, limit=1)
     files = get_files_to_scrape(username, language_repo_dict)
@@ -26,8 +35,9 @@ def feedback():
     scorer = AIQuery()
     stringifiedFiles = scorer.getStringifiedFiles(file_content)
     feedback = scorer.getFeedback(stringifiedFiles)
-    
+
     return feedback
+
 
 def stream_event(event, data):
     return f"event: {event}\ndata: {json.dumps(data)}\n\n"
@@ -44,16 +54,12 @@ def score(gh_username: str):
             "message",
             {"type": "languages", "data": get_user_top_languages(gh_username)[:3]},
         )
-        yield stream_event("message", {"type": "impact", "data": get_user_popularity(gh_username)})
-        time.sleep(0.2)  # simulate delay
-        experience_data = {
-            "score": 80,
-            "feedback": [
-                "You have a good amount of experience in Python",
-                "You have a good amount of experience in Java",
-            ],
-        }
-        yield stream_event("message", {"type": "experience", "data": get_user_exerience(gh_username)})
+        yield stream_event(
+            "message", {"type": "impact", "data": get_user_popularity(gh_username)}
+        )
+        yield stream_event(
+            "message", {"type": "experience", "data": get_user_exerience(gh_username)}
+        )
         time.sleep(0.3)  # simulate delay
         quality_data = {
             "score": 21,
@@ -79,6 +85,8 @@ def compare(usernames_str: str):
     user_data = [get_user_info(username) for username in usernames]
     time.sleep(1)  # simulate delay
 
-    response = [{"user_data": user_data[i]} for i in range(len(user_data))]
+    response = make_response(
+        [{"user_data": user_data[i], "score": 69} for i in range(len(user_data))]
+    )
 
     return response

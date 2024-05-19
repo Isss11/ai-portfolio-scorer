@@ -1,42 +1,71 @@
 import { Navbar } from "@/components/navbar";
 import { PageContainer } from "@/components/page-container";
 import { useState } from "react";
-import mockData from "./sampleCompare";
 import { useEffect } from "react";
 import { compareProfiles } from "@/lib/api";
 import { useParams } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ScoreIndicator } from "@/components/score-indicator";
+import { formatRanking } from "@/lib/format";
 
-function UserRow({ profile }) {
+function UserRow({ userData, score, rank }) {
   return (
-    <tr className="rounded-lg border bg-card text-card-foreground shadow-sm">
-      <td>
-        <Avatar>
-          <AvatarImage />
+    <tr className="rounded-lg bg-card p-4 text-card-foreground shadow-sm outline outline-1 outline-border">
+      <Cell className="w-14 text-end text-sm text-muted-foreground">
+        {userData ? (
+          formatRanking(rank)
+        ) : (
+          <Skeleton className="ml-auto h-5 w-6" />
+        )}
+      </Cell>
+      <Cell className="w-16">
+        <Avatar className="h-16 w-16">
+          <AvatarImage src={userData?.["avatar_url"]} />
           <AvatarFallback />
         </Avatar>
-      </td>
-      <td className="flex flex-col gap-1">
-        <div>{profile.name}</div>
-        <div>{profile.username}</div>
-      </td>
-      <td>{profile.readability}</td>
-      <td>{profile.bestCodingPractices}</td>
-      <td>{profile.maintainability}</td>
-      <td>{profile.impact}</td>
-      <td>{profile.experience}</td>
-      <td>{profile.generalScore}</td>
+      </Cell>
+      <Cell>
+        {userData ? (
+          <h1>{userData.name}</h1>
+        ) : (
+          <Skeleton className="mb-1 h-5 w-40" />
+        )}
+        {userData ? (
+          <h2 className="text-sm font-light text-muted-foreground">
+            {userData.login}
+          </h2>
+        ) : (
+          <Skeleton className="h-4 w-20" />
+        )}
+      </Cell>
+      <Cell className="w-24">
+        {userData ? (
+          <ScoreIndicator percentage={score} />
+        ) : (
+          <Skeleton className="h-[50px] w-[50px] rounded-full" />
+        )}
+      </Cell>
     </tr>
   );
 }
 
+function HeaderCell({ className, ...props }) {
+  return <th className={cn("p-2 text-start sm:p-3", className)} {...props} />;
+}
+
+function Cell({ className, ...props }) {
+  return <td className={cn("h-20 p-2 sm:p-3", className)} {...props} />;
+}
+
 export function CompareResultsPage() {
   const { githubUsernames } = useParams();
+  const usernames = githubUsernames.split(",");
 
   const [comparison, setComparison] = useState("");
 
   useEffect(() => {
-    const usernames = githubUsernames.split(",");
     const abortController = new AbortController();
 
     compareProfiles(usernames, abortController.signal)
@@ -54,28 +83,46 @@ export function CompareResultsPage() {
   return (
     <PageContainer>
       <Navbar />
-      <h1>Compare GitHub User Profiles</h1>
-      <h1>Results</h1>
-      {/* Container that wraps all the different inputs. */}
-      <table>
-        <thead>
-          <tr>
-            <th />
-            <th />
-            <th>Readability</th>
-            <th>Best Practices</th>
-            <th>Maintainability</th>
-            <th>Impact</th>
-            <th>Experience</th>
-            <th>General</th>
-          </tr>
-        </thead>
-        <tbody>
-          {mockData.profileScores?.map((profile, key) => {
-            return <UserRow key={profile.username} profile={profile} />;
-          })}
-        </tbody>
-      </table>
+      <div className="mx-auto flex w-full max-w-[800px] flex-col gap-8 p-10">
+        <h1 className="text-4xl font-bold">GitHub Profile Comparison</h1>
+
+        <div className="flex h-32 items-end justify-center">
+          <div className="flex h-2/3 w-12 items-center justify-center bg-muted text-xl font-semibold">
+            2
+          </div>
+          <div className="flex h-full w-12 items-center justify-center bg-muted text-xl font-semibold">
+            1
+          </div>
+          <div className="flex h-1/3 w-12 items-center justify-center bg-muted text-xl font-semibold">
+            3
+          </div>
+        </div>
+
+        <table className="table-fixed border-separate border-spacing-y-2">
+          <thead>
+            <tr>
+              <HeaderCell className="w-14" />
+              <HeaderCell className="w-16">User</HeaderCell>
+              <HeaderCell />
+              <HeaderCell className="w-24">Score</HeaderCell>
+            </tr>
+          </thead>
+          <tbody>
+            {comparison
+              ? comparison.map((user, idx) => (
+                  <UserRow
+                    key={user["user_data"].login}
+                    userData={user["user_data"]}
+                    score={user["score"]}
+                    rank={idx + 1}
+                  />
+                ))
+              : usernames.map((username) => (
+                  <UserRow key={username} userData={undefined} />
+                ))}
+          </tbody>
+        </table>
+      </div>
     </PageContainer>
   );
 }
