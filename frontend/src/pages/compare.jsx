@@ -2,39 +2,49 @@ import { Navbar } from "@/components/navbar";
 import { PageContainer } from "@/components/page-container";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import axios from "axios"
-import mockData from "./sampleCompare";
-import ProfileGeneral from "@/components/profileGeneral";
-
+import { Textarea } from "@/components/ui/textarea";
+import { useNavigate } from "react-router-dom";
+import { isNotNullish, parseGithubUsername } from "@/lib/utils";
 
 export function ComparePage() {
-    const [profiles, setProfiles] = useState("")
+  const [textareaValue, setTextareaValue] = useState("");
+  const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
-        // TODO: May change IP and port to something standardized
-        let requestBody = {
-            "profileLinks": profiles
-        }
+  /** @param {React.FormEvent} e */
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-        let response = await axios.post("http://127.0.0.1:8080/compareProfiles", requestBody);
+    const usernames = textareaValue
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
+      .map(parseGithubUsername)
+      .filter(isNotNullish)
+      .filter((username, idx, arr) => arr.indexOf(username) === idx);
 
-        // TODO: REMOVE later
-        console.log({ response })
+    if (usernames.length < 2) {
+      return;
     }
 
-    return (
-        <PageContainer>
-            <Navbar />
-            <h1>Compare GitHub User Profiles</h1>
-            <textarea id="compareInput" name="compareInput" rows="4" cols="10" value={profiles} onChange={(e) => setProfiles(e.target.value)} placeholder="Enter a list of users' GitHub profile URLs, with each URL on a separate line."></textarea>
-            <Button onClick={(e) => handleSubmit(e)}>Compare Profiles</Button>
-            <h1>Results</h1>
-            {/* Container that wraps all the different inputs. */}
-            <ol className="list-decimal">
-                {mockData.profileScores?.map((profile, key) => {
-                    return <ProfileGeneral profile={profile} />
-                })}
-            </ol>
-        </PageContainer>
-    );
+    const usernamesString = usernames.join(",");
+
+    navigate(`/compare/${usernamesString}`);
+  };
+
+  return (
+    <PageContainer>
+      <Navbar />
+      <h1>Compare GitHub User Profiles</h1>
+      <form onSubmit={handleSubmit}>
+        <Textarea
+          rows="4"
+          // cols="10"
+          value={textareaValue}
+          onChange={(e) => setTextareaValue(e.target.value)}
+          placeholder="Enter a list of users' GitHub profile URLs, with each URL on a separate line."
+        />
+        <Button type="submit">Compare Profiles</Button>
+      </form>
+    </PageContainer>
+  );
 }

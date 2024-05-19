@@ -20,7 +20,7 @@ function ScoreIndicator({ percentage }) {
   const textSizeClass = percentage < 100 ? "text-lg" : "text-md";
 
   return (
-    <div className="relative">
+    <div className="relative h-[50px] w-[50px]">
       <CircularProgress width={50} height={50} progress={percentage} />
       <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center">
         <p className={cn("font-semibold", textSizeClass)}>{percentage}</p>
@@ -99,7 +99,9 @@ export function UserPage() {
                 <div className="flex flex-row justify-between">
                   <div className="flex flex-col space-y-1.5">
                     <CardTitle>Impact</CardTitle>
-                    <CardDescription>Card Description</CardDescription>
+                    <CardDescription>
+                      Popularity, open-source contributions
+                    </CardDescription>
                   </div>
                   <ScoreIndicator percentage={impact.score} />
                 </div>
@@ -124,7 +126,9 @@ export function UserPage() {
                 <div className="flex flex-row justify-between">
                   <div className="flex flex-col space-y-1.5">
                     <CardTitle>Experience</CardTitle>
-                    <CardDescription>Card Description</CardDescription>
+                    <CardDescription>
+                      Expertise & familiarity with languages and tools
+                    </CardDescription>
                   </div>
                   <ScoreIndicator percentage={experience.score} />
                 </div>
@@ -149,7 +153,9 @@ export function UserPage() {
                 <div className="flex flex-row justify-between">
                   <div className="flex flex-col space-y-1.5">
                     <CardTitle>Quality</CardTitle>
-                    <CardDescription>Card Description</CardDescription>
+                    <CardDescription>
+                      Readability, maintainability, best practices
+                    </CardDescription>
                   </div>
                   <ScoreIndicator percentage={quality.score} />
                 </div>
@@ -174,7 +180,9 @@ export function UserPage() {
                 <div className="flex flex-row justify-between">
                   <div className="flex flex-col space-y-1.5">
                     <CardTitle>Technical ability</CardTitle>
-                    <CardDescription>Card Description</CardDescription>
+                    <CardDescription>
+                      Adaptability, problem-solving, proficiency
+                    </CardDescription>
                   </div>
                   <ScoreIndicator percentage={ability.score} />
                 </div>

@@ -5,6 +5,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
+import { parseGithubUsername } from "@/lib/utils";
 
 const formSchema = z.object({
   input: z.string(),
@@ -27,15 +28,8 @@ export function AnalyzePage() {
       return;
     }
 
-    let username;
-    if (
-      input.startsWith("github.com/") ||
-      input.startsWith("https://github.com/")
-    ) {
-      username = input.split("/").at(-1);
-    } else if (!input.includes("/")) {
-      username = input;
-    } else {
+    const username = parseGithubUsername(input);
+    if (!username) {
       form.setError("input", { message: "Invalid GitHub URL or username" });
       return;
     }

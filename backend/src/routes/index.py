@@ -61,11 +61,8 @@ def score(gh_username: str):
     return app.response_class(generate(), mimetype="text/event-stream")
 
 
-class CompareBodyModel(BaseModel):
-    usernames: list[str]
-
-
-@app.route("/compare", methods=["GET"])
-def score_only(body: CompareBodyModel):
+@app.route("/compare/<usernames_str>", methods=["GET"])
+def score_only(usernames_str: str):
+    usernames = usernames_str.split(",")
     time.sleep(1)  # simulate delay
-    return [{""}]
+    return [{}]

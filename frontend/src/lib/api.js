@@ -22,3 +22,21 @@ export function initiateEventSource(ghUsername, handleEvent) {
 
   return close;
 }
+
+/**
+ * @param {string[]} usernames
+ * @param {AbortSignal} abortSignal
+ */
+export async function compareProfiles(usernames, abortSignal) {
+  const resp = await fetch(`${API_URL}/compare/${usernames.join(",")}`, {
+    signal: abortSignal,
+  });
+
+  if (!resp.ok) {
+    throw new Error("Failed to compare profiles");
+  }
+
+  const comparison = await resp.json();
+
+  return comparison;
+}

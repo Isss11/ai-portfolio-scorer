@@ -1,9 +1,10 @@
-import { ComparePage } from "./pages/compare.jsx"
+import { ComparePage } from "./pages/compare.jsx";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
 import { HomePage } from "./pages/home.jsx";
 import { AnalyzePage } from "./pages/analyze.jsx";
 import { UserPage } from "./pages/user.jsx";
+import { CompareResultsPage } from "./pages/compare-results.jsx";
 
 const router = createBrowserRouter([
   {
@@ -16,11 +17,15 @@ const router = createBrowserRouter([
   },
   {
     path: "/compare",
-    element: <ComparePage />
+    element: <ComparePage />,
   },
   {
     path: "/user/:githubUsername",
     element: <UserPage />,
+  },
+  {
+    path: "/compare/:githubUsernames",
+    element: <CompareResultsPage />,
   },
 ]);
 
