@@ -9,12 +9,13 @@ app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
 # Configure JWT settings
-app.config['JWT_SECRET_KEY'] = 'secret' 
+app.config["JWT_SECRET_KEY"] = "secret"
 jwt = JWTManager(app)
 
 # Import routes after app creation to avoid circular imports
 # ==== Routes ====
 from src.routes import index
+
 
 @app.errorhandler(HTTPException)
 def handle_exception(e):
