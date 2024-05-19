@@ -1,7 +1,9 @@
-from flask import json, request
+from flask import json
+from pydantic import BaseModel
 from src.app import app
 from src.github import get_user_info
 from flask_pydantic import validate
+import time
 
 
 @app.route("/", methods=["GET"])
@@ -25,35 +27,44 @@ def score(gh_username: str):
         yield stream_event(
             "message", {"type": "metadata", "data": get_user_info(gh_username)}
         )
-        yield stream_event("message", {"type": "impact", "data": {}})
-        yield stream_event("message", {"type": "experience", "data": {}})
-        yield stream_event("message", {"type": "quality", "data": {}})
-        yield stream_event("message", {"type": "ability", "data": {}})
+        time.sleep(0.5)  # simulate delay
+        impact_data = {
+            "score": 43,
+            "feedback": [
+                "You have lots of GitHub stars!",
+                "You have a good amount of followers!",
+            ],
+        }
+        yield stream_event("message", {"type": "impact", "data": impact_data})
+        time.sleep(0.2)  # simulate delay
+        experience_data = {
+            "score": 80,
+            "feedback": [
+                "You have a good amount of experience in Python",
+                "You have a good amount of experience in Java",
+            ],
+        }
+        yield stream_event("message", {"type": "experience", "data": experience_data})
+        time.sleep(0.3)  # simulate delay
+        quality_data = {
+            "score": 21,
+            "feedback": [],
+        }
+        yield stream_event("message", {"type": "quality", "data": quality_data})
+        ability_data = {
+            "score": 100,
+            "feedback": ["Wow! You are a great developer!"],
+        }
+        yield stream_event("message", {"type": "ability", "data": ability_data})
         yield stream_event("close", None)
 
     return app.response_class(generate(), mimetype="text/event-stream")
 
-@app.route("/compareProfiles", methods=["POST"])
-def compareProfiles():
-    links = []
-    
-    try:
-        linksString = request.json['profileLinks'].replace(" ", "")
-        links = linksString.split("\n")
-        
-        # Deal with border case to remove all empty links
-        emptyLinksRemoved = False
-        
-        while not emptyLinksRemoved:
-            try:
-                links.remove('')
-            except:
-                print("Removed all empty links, if they ever existed.")
-                emptyLinksRemoved = True
-                
-    except:
-        print("An error has occurrred")
-        
-    print(links)
-    
-    return f"Placeholder response to compare users."
+
+class CompareBodyModel(BaseModel):
+    usernames: list[str]
+
+
+@app.route("/compare", methods=["GET"])
+def compare(body: CompareBodyModel):
+    time.sleep(1)  # simulate delay

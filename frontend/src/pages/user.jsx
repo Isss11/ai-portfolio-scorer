@@ -14,33 +14,55 @@ import {
 } from "@/components/ui/card";
 import { CircularProgress } from "@/components/circular-progress";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function ScoreIndicator({ percentage }) {
-  const textSizeClass = percentage < 100 ? "text-xl" : "text-lg";
+  const textSizeClass = percentage < 100 ? "text-lg" : "text-md";
+
   return (
     <div className="relative">
-      <CircularProgress width={64} height={64} progress={percentage} />
+      <CircularProgress width={50} height={50} progress={percentage} />
       <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center">
-        <p className={cn("font-semibold", textSizeClass)}>{percentage}%</p>
+        <p className={cn("font-semibold", textSizeClass)}>{percentage}</p>
       </div>
     </div>
   );
+}
+
+function CardSkeleton() {
+  return <Skeleton className="h-36" />;
 }
 
 export function UserPage() {
   const { githubUsername } = useParams();
 
   const [metadata, setMetadata] = useState(null);
+  const [impact, setImpact] = useState(null);
+  const [experience, setExperience] = useState(null);
+  const [quality, setQuality] = useState(null);
+  const [ability, setAbility] = useState(null);
 
   /**
    * @param {string} event
    * @param {any} data
    */
   function handleEvent(event, data) {
+    console.log("received", event, data);
     switch (event) {
       case "metadata":
         setMetadata(data);
-        console.log("received metadata", data);
+        break;
+      case "impact":
+        setImpact(data);
+        break;
+      case "experience":
+        setExperience(data);
+        break;
+      case "quality":
+        setQuality(data);
+        break;
+      case "ability":
+        setAbility(data);
         break;
       default:
         break;
@@ -71,63 +93,106 @@ export function UserPage() {
           </div>
         </div>
         <div className="flex flex-1 flex-col gap-4">
-          <Card>
-            <CardHeader>
-              <div className="flex flex-row justify-between">
-                <div className="flex flex-col space-y-1.5">
-                  <CardTitle>Impact</CardTitle>
-                  <CardDescription>Card Description</CardDescription>
+          {impact ? (
+            <Card>
+              <CardHeader>
+                <div className="flex flex-row justify-between">
+                  <div className="flex flex-col space-y-1.5">
+                    <CardTitle>Impact</CardTitle>
+                    <CardDescription>Card Description</CardDescription>
+                  </div>
+                  <ScoreIndicator percentage={impact.score} />
                 </div>
-                <ScoreIndicator percentage={12} />
-              </div>
-            </CardHeader>
+              </CardHeader>
 
-            <CardContent>
-              <p>Card Content</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <div className="flex flex-row justify-between">
-                <div className="flex flex-col space-y-1.5">
-                  <CardTitle>Experience</CardTitle>
-                  <CardDescription>Card Description</CardDescription>
+              {impact.feedback.length > 0 && (
+                <CardContent>
+                  <ul className="flex list-disc flex-col gap-1 pl-4">
+                    {impact.feedback.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </CardContent>
+              )}
+            </Card>
+          ) : (
+            <CardSkeleton />
+          )}
+          {experience ? (
+            <Card>
+              <CardHeader>
+                <div className="flex flex-row justify-between">
+                  <div className="flex flex-col space-y-1.5">
+                    <CardTitle>Experience</CardTitle>
+                    <CardDescription>Card Description</CardDescription>
+                  </div>
+                  <ScoreIndicator percentage={experience.score} />
                 </div>
-                <ScoreIndicator percentage={40} />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p>Card Content</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <div className="flex flex-row justify-between">
-                <div className="flex flex-col space-y-1.5">
-                  <CardTitle>Quality</CardTitle>
-                  <CardDescription>Card Description</CardDescription>
+              </CardHeader>
+
+              {experience.feedback.length > 0 && (
+                <CardContent>
+                  <ul className="flex list-disc flex-col gap-1 pl-4">
+                    {experience.feedback.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </CardContent>
+              )}
+            </Card>
+          ) : (
+            <CardSkeleton />
+          )}
+          {quality ? (
+            <Card>
+              <CardHeader>
+                <div className="flex flex-row justify-between">
+                  <div className="flex flex-col space-y-1.5">
+                    <CardTitle>Quality</CardTitle>
+                    <CardDescription>Card Description</CardDescription>
+                  </div>
+                  <ScoreIndicator percentage={quality.score} />
                 </div>
-                <ScoreIndicator percentage={60} />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p>Card Content</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <div className="flex flex-row justify-between">
-                <div className="flex flex-col space-y-1.5">
-                  <CardTitle>Quality</CardTitle>
-                  <CardDescription>Card Description</CardDescription>
+              </CardHeader>
+
+              {quality.feedback.length > 0 && (
+                <CardContent>
+                  <ul className="flex list-disc flex-col gap-1 pl-4">
+                    {quality.feedback.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </CardContent>
+              )}
+            </Card>
+          ) : (
+            <CardSkeleton />
+          )}
+          {ability ? (
+            <Card>
+              <CardHeader>
+                <div className="flex flex-row justify-between">
+                  <div className="flex flex-col space-y-1.5">
+                    <CardTitle>Technical ability</CardTitle>
+                    <CardDescription>Card Description</CardDescription>
+                  </div>
+                  <ScoreIndicator percentage={ability.score} />
                 </div>
-                <ScoreIndicator percentage={100} />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p>Card Content</p>
-            </CardContent>
-          </Card>
+              </CardHeader>
+
+              {ability.feedback.length > 0 && (
+                <CardContent>
+                  <ul className="flex list-disc flex-col gap-1 pl-4">
+                    {ability.feedback.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                </CardContent>
+              )}
+            </Card>
+          ) : (
+            <CardSkeleton />
+          )}
         </div>
       </div>
     </PageContainer>
