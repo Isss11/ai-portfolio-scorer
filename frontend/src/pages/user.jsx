@@ -12,22 +12,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CircularProgress } from "@/components/circular-progress";
-import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
-
-function ScoreIndicator({ percentage }) {
-  const textSizeClass = percentage < 100 ? "text-lg" : "text-md";
-
-  return (
-    <div className="relative h-[50px] w-[50px]">
-      <CircularProgress width={50} height={50} progress={percentage} />
-      <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center">
-        <p className={cn("font-semibold", textSizeClass)}>{percentage}</p>
-      </div>
-    </div>
-  );
-}
+import { ScoreIndicator } from "@/components/score-indicator";
 
 function CardSkeleton() {
   return <Skeleton className="h-36" />;
@@ -92,6 +78,7 @@ export function UserPage() {
             </h2>
           </div>
         </div>
+
         <div className="flex flex-1 flex-col gap-4">
           {impact ? (
             <Card>
