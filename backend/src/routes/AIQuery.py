@@ -46,6 +46,32 @@ Write 1-3 short sentences with each sentence on a new line.
 
         return feedback
 
+    def generate_experience_feedback(self, score, top_three_languages):
+        query = f"""
+I scored {score} out of 100 for software development experience on my GitHub profile.
+The experience rubric is based on the lines of code written, the number of respositories, and
+the years of experience. Based on my score, describe what achievements I have made,
+or provide feedback on what I can do to improve my experience.
+
+I have the most programming experience in these three programming languages: {', '.join(top_three_languages)}.
+
+Write 1-3 short sentences with each sentence on a new line.
+        """.strip()
+
+        note = llm.generate_content(query).text
+
+        def remove_dash(note):
+            if note.startswith("- "):
+                return note[2:]
+            return note
+
+        feedback = note.split("\n")
+        feedback = [
+            remove_dash(line) for line in feedback if line
+        ]  # filter out empty lines
+
+        return feedback
+
     def getNote(self, category, score):
         # category = "impact"
         objectFormat = {

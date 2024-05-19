@@ -197,13 +197,15 @@ def get_user_exerience(username, ai_prompt=True):
         (2000000 / (1 + math.exp(-0.0000015 * total_experience)) - 1000000) / 10000
     )
 
+    feedback = []
     if ai_prompt:
         gemini = AIQuery()
-        note = gemini.getNote("programming experience", experience_score)
-    else:
-        note = ""
+        top_three_langs = [lang["name"] for lang in profile_data[:3]]
+        feedback = gemini.generate_experience_feedback(
+            experience_score, top_three_langs
+        )
 
-    return {"score": experience_score, "feedback": [note]}
+    return {"score": experience_score, "feedback": feedback}
 
 
 @ttl_cache
