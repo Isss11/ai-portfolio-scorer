@@ -56,7 +56,6 @@ FILE_TYPES = {
 def flatten(l):
     return [item for sublist in l for item in sublist]
 
-
 def get_user_info(username):
     url = f"https://api.github.com/users/{username}"
     headers = {

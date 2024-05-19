@@ -46,7 +46,7 @@ class AIQuery:
         
         feedback = self.extract_json(feedback)
 
-        return feedback
+        return feedback[0]
     
     # Reference for JSON fix: https://learnwithhasan.com/consistent-json-gemini-python/
     def extract_json(self, text_response):

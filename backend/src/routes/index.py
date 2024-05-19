@@ -1,5 +1,4 @@
 from flask import json, request
-from pydantic import BaseModel
 from src.app import app
 from src.github import get_user_info, get_user_top_languages, get_repo_list, filter_repos_by_languages, get_files_to_scrape, retrieve_files, get_user_popularity, get_user_exerience
 from src.routes.AIQuery import AIQuery
