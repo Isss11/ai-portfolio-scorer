@@ -9,7 +9,7 @@ from src.github import (
     retrieve_files,
     get_user_popularity,
     get_user_exerience,
-    get_user_quality
+    get_user_quality,
 )
 from src.routes.AIQuery import AIQuery
 from flask_pydantic import validate
@@ -43,7 +43,6 @@ def feedback():
 def stream_event(event, data):
     return f"event: {event}\ndata: {json.dumps(data)}\n\n"
 
-
 @app.route("/score/<gh_username>", methods=["GET"])
 @validate()
 def score(gh_username: str):
@@ -76,6 +75,8 @@ def score(gh_username: str):
 
     return app.response_class(generate(), mimetype="text/event-stream")
 
+def sortByScore(object):
+    return object['score']
 
 @app.route("/compare/<usernames_str>", methods=["GET"])
 def compare(usernames_str: str):
@@ -84,10 +85,17 @@ def compare(usernames_str: str):
         return "Max 30 usernames", 400
 
     user_data = [get_user_info(username) for username in usernames]
-    time.sleep(1)  # simulate delay
+    user_scores = [get_user_quality(username) for username in usernames]
+    
+    print(user_scores)
 
-    response = make_response(
-        [{"user_data": user_data[i], "score": 69} for i in range(len(user_data))]
-    )
+    responseInfo = [{"user_data": user_data[i], "score": user_scores[i]['score']} for i in range(len(user_data))]
+    
+    responseInfo.sort(key=sortByScore, reverse=True)
+    print("responseInfo start")
+    print(responseInfo)
+    print("responseInfo end")
+
+    response = make_response(responseInfo)
 
     return response

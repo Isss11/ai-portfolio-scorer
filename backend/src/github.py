@@ -391,7 +391,6 @@ def retrieve_file_from_repo(username, repo, path):
         print(f"Failed to retrieve file. Status code: {response.status_code}")
         return None
 
-
 # if __name__ == "__main__":
 #     get_user_quality('benawad')
     # if GITHUB_TOKEN is None:
