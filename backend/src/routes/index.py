@@ -66,5 +66,6 @@ class CompareBodyModel(BaseModel):
 
 
 @app.route("/compare", methods=["GET"])
-def compare(body: CompareBodyModel):
+def score_only(body: CompareBodyModel):
     time.sleep(1)  # simulate delay
+    return [{""}]

@@ -5,7 +5,7 @@ from datetime import datetime
 import base64
 from routes.AIScorer import AIScorer
 
-from config import GITHUB_TOKEN
+from src.config import GITHUB_TOKEN
 
 FILE_TYPES = {
     "C": (".c", ".h"),
@@ -53,17 +53,19 @@ FILE_TYPES = {
     "Ada": (".adb", ".ads"),
 }
 
+
 def get_user_info(username):
     url = f"https://api.github.com/users/{username}"
     headers = {
         "Accept": "application/vnd.github.v3+json",
-        "Authorization": f"token {GITHUB_TOKEN}"
+        "Authorization": f"token {GITHUB_TOKEN}",
     }
 
     response = requests.get(url, headers=headers)
     response.raise_for_status()
     data = response.json()
     return data
+
 
 def extract_github_username(url):
     pattern = r"github\.com/([A-Za-z0-9-]+)"
@@ -73,31 +75,33 @@ def extract_github_username(url):
     else:
         return None
 
+
 def get_all_user_repos(username, token):
     url = f"https://api.github.com/users/{username}/repos"
     headers = {
         "Authorization": f"token {token}",
-        "Accept": "application/vnd.github.v3+json"
+        "Accept": "application/vnd.github.v3+json",
     }
     repos = []
 
     while url:
         response = requests.get(url, headers=headers)
-        
+
         if response.status_code == 200:
             data = response.json()
             repos.extend(data)
-            
+
             # Check if there are more pages
-            if 'next' in response.links:
-                url = response.links['next']['url']
+            if "next" in response.links:
+                url = response.links["next"]["url"]
             else:
                 url = None
         else:
             print(f"Failed to retrieve repositories: {response.status_code}")
             break
-    
+
     return repos
+
 
 def get_repo_list(username, token):
     repo_list = []
@@ -105,37 +109,42 @@ def get_repo_list(username, token):
     repos = get_all_user_repos(username, token)
     for repo in repos:
         repo_info = {}
-        keys = ['name', 'pushed_at']
-        
+        keys = ["name", "pushed_at"]
+
         # Skipping forked repo's
-        if repo['fork']:
+        if repo["fork"]:
             continue
-        
+
         for key in keys:
             repo_info[key] = repo[key]
 
-        repo_info['popularity'] = calculate_repo_popularity(repo)
+        repo_info["popularity"] = calculate_repo_popularity(repo)
         repo_list.append(repo_info)
-    
-    sorted_repos = sorted(repo_list, key=lambda x: parse_github_time_str(x['pushed_at']), reverse=True)
+
+    sorted_repos = sorted(
+        repo_list, key=lambda x: parse_github_time_str(x["pushed_at"]), reverse=True
+    )
     return sorted_repos
 
+
 def calculate_repo_popularity(repo):
-    keys = ['forks_count', 'stargazers_count', 'watchers_count']
+    keys = ["forks_count", "stargazers_count", "watchers_count"]
     popularity = 0
 
     for key in keys:
-        if key == 'forks_count':
+        if key == "forks_count":
             multiplier = 2
         else:
             multiplier = 1
 
         popularity += multiplier * repo[key]
-    
+
     return popularity
+
 
 def parse_github_time_str(date_str):
     return datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%SZ")
+
 
 def filter_repos_by_languages(username, token, repo_list, languages, limit=None):
     repos_by_language = {}
@@ -148,22 +157,23 @@ def filter_repos_by_languages(username, token, repo_list, languages, limit=None)
 
     # print(f"{repo_list=}")
     for repo in repo_list:
-        repo_languages = get_repo_languages(username, token, repo['name'])
-        
+        repo_languages = get_repo_languages(username, token, repo["name"])
+
         for language in repo_languages:
             try:
                 if limit == None or len(repos_by_language[language]) < limit:
-                    repos_by_language[language].append(repo['name'])
+                    repos_by_language[language].append(repo["name"])
             except:
                 pass
-    
+
     return repos_by_language
+
 
 def get_repo_languages(username, token, repo):
     url = f"https://api.github.com/repos/{username}/{repo}/languages"
     headers = {
         "Authorization": f"token {token}",
-        "Accept": "application/vnd.github.v3+json"
+        "Accept": "application/vnd.github.v3+json",
     }
     response = requests.get(url, headers=headers)
 
@@ -172,6 +182,7 @@ def get_repo_languages(username, token, repo):
     else:
         print(f"Failed to retrieve languages: {response.status_code}")
         return None
+
 
 def get_files_to_scrape(username, token, language_repo_dict):
     files = {}
@@ -187,23 +198,25 @@ def get_files_to_scrape(username, token, language_repo_dict):
 
     return files
 
+
 def locate_files(username, token, repo_name, language, files, path=""):
     url = f"https://api.github.com/repos/{username}/{repo_name}/contents/{path}"
     headers = {
         "Authorization": f"token {token}",
-        "Accept": "application/vnd.github.v3+json"
+        "Accept": "application/vnd.github.v3+json",
     }
 
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
         contents = response.json()
         for item in contents:
-            if item['type'] == 'file' and item['path'].endswith(FILE_TYPES[language]):
-                files.append(item['path'])
-            elif item['type'] == 'dir':
-                locate_files(username, token, repo_name, language, files, item['path'])
+            if item["type"] == "file" and item["path"].endswith(FILE_TYPES[language]):
+                files.append(item["path"])
+            elif item["type"] == "dir":
+                locate_files(username, token, repo_name, language, files, item["path"])
     else:
         print(f"Failed to retrieve contents: {response.status_code}")
+
 
 def retrieve_files(username, token, repo_files_dict):
     raw_file_content = {}
@@ -211,18 +224,21 @@ def retrieve_files(username, token, repo_files_dict):
     for language, location in repo_files_dict.items():
         repo = location["repo"]
         raw_file_content[language] = {"repo": repo, "files": []}
-        
-        for path in location['files']:
+
+        for path in location["files"]:
             raw_code = retrieve_file_from_repo(username, token, repo, path)
-            raw_file_content[language]["files"].append({"name": path, "content": raw_code})
-    
+            raw_file_content[language]["files"].append(
+                {"name": path, "content": raw_code}
+            )
+
     return raw_file_content
+
 
 def retrieve_file_from_repo(username, token, repo, path):
     url = f"https://api.github.com/repos/{username}/{repo}/contents/{path}"
     headers = {
         "Authorization": f"token {token}",
-        "Accept": "application/vnd.github.v3+json"
+        "Accept": "application/vnd.github.v3+json",
     }
 
     response = requests.get(url, headers=headers)
@@ -234,11 +250,12 @@ def retrieve_file_from_repo(username, token, repo, path):
         print(f"Failed to retrieve file. Status code: {response.status_code}")
         return None
 
+
 if __name__ == "__main__":
     token = os.getenv("GITHUB_TOKEN")
     if token is None:
         print("Error: GITHUB_TOKEN environment variable not set")
-        exit
+        exit()
 
     # Get username
     github_profile_url = "https://github.com/ericbuys"
@@ -250,9 +267,12 @@ if __name__ == "__main__":
 
     # Get repos
     repos = get_repo_list(username, token)
-    language_repo_dict = filter_repos_by_languages(username, token, repos, languages, limit=1)
+    
+    language_repo_dict = filter_repos_by_languages(
+        username, token, repos, languages, limit=1
+    )
     # print(f"{language_repo_dict=}")
-
+    
     # Get file content
     files = get_files_to_scrape(username, token, language_repo_dict)
     # print(f"{files=}")
