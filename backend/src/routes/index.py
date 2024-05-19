@@ -13,7 +13,6 @@ from src.github import (
 )
 from src.routes.AIQuery import AIQuery
 from flask_pydantic import validate
-import time
 
 
 @app.route("/", methods=["GET"])
@@ -50,27 +49,24 @@ def score(gh_username: str):
         yield stream_event(
             "message", {"type": "metadata", "data": get_user_info(gh_username)}
         )
+        top_languages = get_user_top_languages(gh_username)[:3]
         yield stream_event(
             "message",
-            {"type": "languages", "data": get_user_top_languages(gh_username)[:3]},
+            {"type": "languages", "data": top_languages},
         )
-        yield stream_event(
-            "message", {"type": "impact", "data": get_user_popularity(gh_username)}
-        )
-        yield stream_event(
-            "message", {"type": "experience", "data": get_user_exerience(gh_username)}
-        )
-        time.sleep(0.3)  # simulate delay
-        quality_data = {
-            "score": 21,
+        popularity = get_user_popularity(gh_username)
+        yield stream_event("message", {"type": "impact", "data": popularity})
+        user_experience = get_user_exerience(gh_username)
+        yield stream_event("message", {"type": "experience", "data": user_experience})
+        quality = get_user_quality(gh_username)
+        yield stream_event("message", {"type": "quality", "data": quality})
+        overall_data = {
+            "score": int(
+                (popularity["score"] + user_experience["score"] + quality["score"]) / 3
+            ),
             "feedback": [],
         }
-        yield stream_event("message", {"type": "quality", "data": get_user_quality(gh_username)})
-        ability_data = {
-            "score": 100,
-            "feedback": ["Wow! You are a great developer!"],
-        }
-        yield stream_event("message", {"type": "ability", "data": ability_data})
+        yield stream_event("message", {"type": "overall", "data": overall_data})
         yield stream_event("close", None)
 
     return app.response_class(generate(), mimetype="text/event-stream")
@@ -92,9 +88,7 @@ def compare(usernames_str: str):
     responseInfo = [{"user_data": user_data[i], "score": user_scores[i]['score']} for i in range(len(user_data))]
     
     responseInfo.sort(key=sortByScore, reverse=True)
-    print("responseInfo start")
     print(responseInfo)
-    print("responseInfo end")
 
     response = make_response(responseInfo)
 

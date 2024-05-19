@@ -1,7 +1,8 @@
-import os
 import google.generativeai as genai
 import re
 import json
+
+from src.config import GOOGLE_API_KEY
 
 jsonQueryExample = {
     "readability": 5,
@@ -10,15 +11,17 @@ jsonQueryExample = {
     "feedback": "Feedback is written here.",
 }
 
+llm: genai.GenerativeModel = None  # type: ignore
+
 
 class AIQuery:
     def __init__(self) -> None:
-        self.llm = self.getGemini()
+        global llm
+        llm = llm or self.getGemini()
 
     # Sets up API key for Gemini, ready to query
     def getGemini(self):
-        self.GOOGLE_API_KEY = os.environ["GOOGLE_API_KEY"]
-        genai.configure(api_key=self.GOOGLE_API_KEY)
+        genai.configure(api_key=GOOGLE_API_KEY)
 
         return genai.GenerativeModel("gemini-pro")
 
@@ -27,12 +30,10 @@ class AIQuery:
         objectFormat = {
             "note": "A note is here.",
         }
-        
-        query = f"Can you give a message about my score of {score} out of 100 for my overall '{category}' on GitHub in 8 words or less. It should not have any apostrophes. The response should be in the format:\n {objectFormat}"
-        
-        note = self.llm.generate_content(query).text
 
-        print(note)
+        query = f"Can you give a message about my score of {score} out of 100 for my overall '{category}' on GitHub in 8 words or less. It should not have any apostrophes. The response should be in the format:\n {objectFormat}"
+
+        note = llm.generate_content(query).text
 
         note = self.extract_json(note)
 
@@ -40,9 +41,17 @@ class AIQuery:
 
     # Obtains a JSON response on a variety of grades from Gemini
     def getFeedback(self, stringifiedFiles):
-        query = f"""Score the following code from different files on code readability with an integer, with the maximum value being 10. Then score the following code on best programming practices for the given programming language (such as object-oriented programming if the programming language used is Java, Kotlin, or another OOP language) with an integer, with the maximum value being 10. Than score the following code on maintainability with an integer, with the maximum value being 10. Also provide some general feedback on the code itself in a 'feedback' object -- it should be a maximum of 25 words.  Return it as a JSON object exactly as in this example:\n {jsonQueryExample}\nThe code to score is:\n {stringifiedFiles}"""
+        query = f"""
+Score the following code from different files on code readability with an integer, with the maximum value being 10.
+Then score the following code on best programming practices for the given programming language (such as object-oriented programming if the programming language used is Java, Kotlin, or another OOP language) with an integer, with the maximum value being 10.
+Than score the following code on maintainability with an integer, with the maximum value being 10.
+Also provide some general feedback on the code itself in a 'feedback' object -- it should be a maximum of 25 words.
+Return it as a JSON object exactly as in this example:
+{jsonQueryExample}
+The code to score is:
+{stringifiedFiles}""".strip()
 
-        feedback = self.llm.generate_content(query)
+        feedback = llm.generate_content(query)
         feedback = feedback.text
 
         feedback = self.extract_json(feedback)
@@ -114,4 +123,3 @@ class AIQuery:
         feedback = self.getFeedback(stringifiedFiles, filePaths[0])
 
         return feedback
-
