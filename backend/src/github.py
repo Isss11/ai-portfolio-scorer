@@ -419,6 +419,8 @@ def locate_files(username, repo_name, language, files, path=""):
 
 def retrieve_files(username, repo_files_dict):
     raw_file_content = {}
+    max_file_count = 10
+    file_count = 0
 
     for language, location in repo_files_dict.items():
         repo = location["repo"]
@@ -429,6 +431,10 @@ def retrieve_files(username, repo_files_dict):
             raw_file_content[language]["files"].append(
                 {"name": path, "content": raw_code}
             )
+            file_count += 1
+
+            if file_count >= max_file_count:
+                return raw_file_content
 
     return raw_file_content
 
