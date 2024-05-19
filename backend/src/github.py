@@ -177,7 +177,7 @@ def get_user_popularity(username):
         "feedback": [feedback_message]
     }
 
-def get_user_exerience(username):    
+def get_user_exerience(username):
     profile_data = get_user_top_languages(username)
     total_experience = 0
 
@@ -195,8 +195,26 @@ def get_user_exerience(username):
     }
 
 def get_user_quality(username):
-    top_three_languages = get_user_top_languages(username)
-    print(top_three_languages)
+    top_three_languages = get_user_top_languages(username)[:2]
+    languages = []
+    for obj in top_three_languages:
+        languages.append(obj['name'])
+
+    repos = get_repo_list(username)
+    language_repo_dict = filter_repos_by_languages(username, repos, languages, limit=1)
+    files = get_files_to_scrape(username, language_repo_dict)
+    file_content = retrieve_files(username, files)
+    scorer = AIQuery()
+    stringifiedFiles = scorer.getStringifiedFiles(file_content)
+    feedback = scorer.getFeedback(stringifiedFiles)
+
+    avg_score = round((feedback['readability'] + feedback['bestProgrammingPractices'] + feedback['maintainability']) / 3 * 10)
+    
+    # print(top_three_languages)
+    return {
+        "score": avg_score,
+        "feedback": [feedback['feedback']],
+    }
     
 
 def get_all_user_repos(username):

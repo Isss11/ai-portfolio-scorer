@@ -23,13 +23,13 @@ class AIQuery:
         return genai.GenerativeModel("gemini-pro")
 
     def getNote(self, category, score):
-        category = "impact"
+        # category = "impact"
         objectFormat = {
             "note": "A note is here.",
         }
-
-        query = f"Can you give a message about my score of {score} out of 10 for my overall '{category}' on GitHub in 8 words or less. It should not have any apostrophes. The response should be in the format:\n {objectFormat}"
-
+        
+        query = f"Can you give a message about my score of {score} out of 100 for my overall '{category}' on GitHub in 8 words or less. It should not have any apostrophes. The response should be in the format:\n {objectFormat}"
+        
         note = self.llm.generate_content(query).text
 
         print(note)

@@ -9,6 +9,7 @@ from src.github import (
     retrieve_files,
     get_user_popularity,
     get_user_exerience,
+    get_user_quality
 )
 from src.routes.AIQuery import AIQuery
 from flask_pydantic import validate
@@ -65,7 +66,7 @@ def score(gh_username: str):
             "score": 21,
             "feedback": [],
         }
-        yield stream_event("message", {"type": "quality", "data": quality_data})
+        yield stream_event("message", {"type": "quality", "data": get_user_quality(gh_username)})
         ability_data = {
             "score": 100,
             "feedback": ["Wow! You are a great developer!"],
