@@ -9,10 +9,19 @@ import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScoreIndicator } from "@/components/score-indicator";
 import { formatRanking } from "@/lib/format";
+import { useNavigate } from "react-router-dom";
 
 function UserRow({ userData, score, rank }) {
+  const navigate = useNavigate();
+
   return (
-    <tr className="rounded-lg bg-card p-4 text-card-foreground shadow-sm outline outline-1 outline-border">
+    <tr
+      className={cn(
+        "rounded-lg bg-card p-4 text-card-foreground shadow-sm outline outline-1 outline-border",
+        userData && "cursor-pointer",
+      )}
+      onClick={userData ? () => navigate(`/user/${userData.login}`) : undefined}
+    >
       <Cell className="w-14 text-end text-sm text-muted-foreground">
         {userData ? (
           formatRanking(rank)

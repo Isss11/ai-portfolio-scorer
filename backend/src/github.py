@@ -56,6 +56,7 @@ FILE_TYPES = {
 def flatten(l):
     return [item for sublist in l for item in sublist]
 
+
 def get_user_info(username):
     url = f"https://api.github.com/users/{username}"
     headers = {
@@ -67,6 +68,7 @@ def get_user_info(username):
     response.raise_for_status()
     data = response.json()
     return data
+
 
 # Sourced from https://github.com/anuraghazra/github-readme-stats
 def get_user_top_languages(username):
@@ -146,7 +148,7 @@ def get_user_popularity(username):
             }
         }
         """
-    
+
     variables = {"login": username}
 
     body = {"query": query, "variables": variables}
@@ -156,7 +158,7 @@ def get_user_popularity(username):
 
     response = requests.post(url, json=body, headers=headers)
     result = response.json()
-    
+
     repositories = result["data"]["user"]["repositories"]["nodes"]
     total_popularity = 0
 
@@ -169,12 +171,9 @@ def get_user_popularity(username):
 
     # Creating a Gemini instance to query for popularity score feedback
     gemini = AIQuery()
-    feedback_message = gemini.getNote('software impact', popularity_score)
+    feedback_message = gemini.getNote("software impact", popularity_score)
 
-    return {
-        "score": popularity_score,
-        "feedback": [feedback_message]
-    }
+    return {"score": popularity_score, "feedback": [feedback_message]}
 
 
 def get_user_quality2(username):
@@ -199,7 +198,7 @@ def get_user_quality2(username):
             }
         }
         """
-    
+
     variables = {"login": username}
 
     repos = get_repo_list(username)
@@ -210,7 +209,7 @@ def get_user_quality2(username):
 
     response = requests.post(url, json=body, headers=headers)
     result = response.json()
-    
+
     repositories = result["data"]["user"]["repositories"]["nodes"]
     total_popularity = 0
 
@@ -223,12 +222,9 @@ def get_user_quality2(username):
 
     # Creating a Gemini instance to query for popularity score feedback
     gemini = AIQuery()
-    feedback_message = gemini.getNote('software impact', popularity_score)
+    feedback_message = gemini.getNote("software impact", popularity_score)
 
-    return {
-        "score": popularity_score,
-        "feedback": [feedback_message]
-    }
+    return {"score": popularity_score, "feedback": [feedback_message]}
 
 
 def get_user_exerience(username):
@@ -236,23 +232,23 @@ def get_user_exerience(username):
     total_experience = 0
 
     for lang in profile_data:
-        total_experience += lang['size']
+        total_experience += lang["size"]
 
-    experience_score = round((2000000 / (1 + math.exp(-0.0000015 * total_experience)) - 1000000) / 10000)
-    
+    experience_score = round(
+        (2000000 / (1 + math.exp(-0.0000015 * total_experience)) - 1000000) / 10000
+    )
+
     gemini = AIQuery()
-    note = gemini.getNote('programming experience', experience_score)
-    
-    return {
-        "score": experience_score,
-        "feedback": [note]
-    }
+    note = gemini.getNote("programming experience", experience_score)
+
+    return {"score": experience_score, "feedback": [note]}
+
 
 def get_user_quality(username):
     top_three_languages = get_user_top_languages(username)[:2]
     languages = []
     for obj in top_three_languages:
-        languages.append(obj['name'])
+        languages.append(obj["name"])
 
     repos = get_repo_list(username)
     language_repo_dict = filter_repos_by_languages(username, repos, languages, limit=1)
@@ -262,14 +258,22 @@ def get_user_quality(username):
     stringifiedFiles = scorer.getStringifiedFiles(file_content)
     feedback = scorer.getFeedback(stringifiedFiles)
 
-    avg_score = round((feedback['readability'] + feedback['bestProgrammingPractices'] + feedback['maintainability']) / 3 * 10)
-    
+    avg_score = round(
+        (
+            feedback["readability"]
+            + feedback["bestProgrammingPractices"]
+            + feedback["maintainability"]
+        )
+        / 3
+        * 10
+    )
+
     # print(top_three_languages)
     return {
         "score": avg_score,
-        "feedback": [feedback['feedback']],
+        "feedback": [feedback["feedback"]],
     }
-    
+
 
 def get_all_user_repos(username):
     url = f"https://api.github.com/users/{username}/repos"
@@ -445,36 +449,37 @@ def retrieve_file_from_repo(username, repo, path):
         print(f"Failed to retrieve file. Status code: {response.status_code}")
         return None
 
+
 # if __name__ == "__main__":
 #     get_user_quality('benawad')
-    # if GITHUB_TOKEN is None:
-    #     print("Error: GITHUB_TOKEN environment variable not set")
-    #     exit()
+# if GITHUB_TOKEN is None:
+#     print("Error: GITHUB_TOKEN environment variable not set")
+#     exit()
 
-    # # Get username
-    # # github_profile_url = "https://github.com/Isss11"
-    # # github_profile_url = "https://github.com/joelharder4?tab=repositories"
-    # # github_profile_url = "https://github.com/wiwichips?page=1&tab=repositories"
-    # username = "ericbuys"
-    # languages = ["Python", "HTML"]
+# # Get username
+# # github_profile_url = "https://github.com/Isss11"
+# # github_profile_url = "https://github.com/joelharder4?tab=repositories"
+# # github_profile_url = "https://github.com/wiwichips?page=1&tab=repositories"
+# username = "ericbuys"
+# languages = ["Python", "HTML"]
 
-    # # Get repos
-    # repos = get_repo_list(username)
-    # language_repo_dict = filter_repos_by_languages(username, repos, languages, limit=1)
-    # print(f"{language_repo_dict=}")
+# # Get repos
+# repos = get_repo_list(username)
+# language_repo_dict = filter_repos_by_languages(username, repos, languages, limit=1)
+# print(f"{language_repo_dict=}")
 
-    # # Get file content
-    # files = get_files_to_scrape(username, language_repo_dict)
-    # print(f"{files=}")
-    # file_content = retrieve_files(username, files)
-    # print(f"{file_content=}")
+# # Get file content
+# files = get_files_to_scrape(username, language_repo_dict)
+# print(f"{files=}")
+# file_content = retrieve_files(username, files)
+# print(f"{file_content=}")
 
-    # # Scoring the stringified files
-    # scorer = AIQuery()
-    # stringifiedFiles = scorer.getStringifiedFiles(file_content)
-    # grades = scorer.getFeedback(stringifiedFiles)
+# # Scoring the stringified files
+# scorer = AIQuery()
+# stringifiedFiles = scorer.getStringifiedFiles(file_content)
+# grades = scorer.getFeedback(stringifiedFiles)
 
-    # print(grades)
+# print(grades)
 
 if __name__ == "__main__":
     print(get_user_exerience("ericbuys"))
