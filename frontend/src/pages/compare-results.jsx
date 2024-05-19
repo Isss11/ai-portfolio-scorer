@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 function UserRow({ profile }) {
   return (
-    <tr>
+    <tr className="rounded-lg border bg-card text-card-foreground shadow-sm">
       <td>
         <Avatar>
           <AvatarImage />

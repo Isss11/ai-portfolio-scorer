@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScoreIndicator } from "@/components/score-indicator";
+import { LanguageList } from "@/components/language-list";
 
 function CardSkeleton() {
   return <Skeleton className="h-36" />;
@@ -27,6 +28,7 @@ export function UserPage() {
   const [experience, setExperience] = useState(null);
   const [quality, setQuality] = useState(null);
   const [ability, setAbility] = useState(null);
+  const [languages, setLanguages] = useState(null);
 
   /**
    * @param {string} event
@@ -37,6 +39,9 @@ export function UserPage() {
     switch (event) {
       case "metadata":
         setMetadata(data);
+        break;
+      case "languages":
+        setLanguages(data);
         break;
       case "impact":
         setImpact(data);
@@ -76,6 +81,14 @@ export function UserPage() {
             <h2 className="text-xl font-light text-muted-foreground">
               {metadata?.login}
             </h2>
+
+            <div className="mt-4">
+              {languages ? (
+                <LanguageList languages={languages} />
+              ) : (
+                <Skeleton className="w-5" />
+              )}
+            </div>
           </div>
         </div>
 

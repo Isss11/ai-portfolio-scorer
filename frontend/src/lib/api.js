@@ -20,6 +20,11 @@ export function initiateEventSource(ghUsername, handleEvent) {
     handleEvent(message.type, message.data);
   };
 
+  eventSource.onerror = (event) => {
+    console.error("EventSource failed:", event);
+    close();
+  };
+
   return close;
 }
 
