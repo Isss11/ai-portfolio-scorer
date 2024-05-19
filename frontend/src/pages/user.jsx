@@ -27,7 +27,7 @@ export function UserPage() {
   const [impact, setImpact] = useState(null);
   const [experience, setExperience] = useState(null);
   const [quality, setQuality] = useState(null);
-  const [ability, setAbility] = useState(null);
+  const [overall, setOverall] = useState(null);
   const [languages, setLanguages] = useState(null);
 
   /**
@@ -52,8 +52,8 @@ export function UserPage() {
       case "quality":
         setQuality(data);
         break;
-      case "ability":
-        setAbility(data);
+      case "overall":
+        setOverall(data);
         break;
       default:
         break;
@@ -96,7 +96,7 @@ export function UserPage() {
           {impact ? (
             <Card>
               <CardHeader>
-                <div className="flex flex-row justify-between">
+                <div className="flex flex-row items-center justify-between">
                   <div className="flex flex-col space-y-1.5">
                     <CardTitle>Impact</CardTitle>
                     <CardDescription>
@@ -123,7 +123,7 @@ export function UserPage() {
           {experience ? (
             <Card>
               <CardHeader>
-                <div className="flex flex-row justify-between">
+                <div className="flex flex-row items-center justify-between">
                   <div className="flex flex-col space-y-1.5">
                     <CardTitle>Experience</CardTitle>
                     <CardDescription>
@@ -150,7 +150,7 @@ export function UserPage() {
           {quality ? (
             <Card>
               <CardHeader>
-                <div className="flex flex-row justify-between">
+                <div className="flex flex-row items-center justify-between">
                   <div className="flex flex-col space-y-1.5">
                     <CardTitle>Quality</CardTitle>
                     <CardDescription>
@@ -174,24 +174,21 @@ export function UserPage() {
           ) : (
             <CardSkeleton />
           )}
-          {ability ? (
+          {overall ? (
             <Card>
               <CardHeader>
-                <div className="flex flex-row justify-between">
+                <div className="flex flex-row items-center justify-between">
                   <div className="flex flex-col space-y-1.5">
-                    <CardTitle>Technical ability</CardTitle>
-                    <CardDescription>
-                      Adaptability, problem-solving, proficiency
-                    </CardDescription>
+                    <CardTitle>Overall</CardTitle>
                   </div>
-                  <ScoreIndicator percentage={ability.score} />
+                  <ScoreIndicator percentage={overall.score} />
                 </div>
               </CardHeader>
 
-              {ability.feedback.length > 0 && (
+              {overall.feedback.length > 0 && (
                 <CardContent>
                   <ul className="flex list-disc flex-col gap-1 pl-4">
-                    {ability.feedback.map((item) => (
+                    {overall.feedback.map((item) => (
                       <li key={item}>{item}</li>
                     ))}
                   </ul>

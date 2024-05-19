@@ -149,6 +149,59 @@ def get_user_popularity(username):
     
     variables = {"login": username}
 
+    body = {"query": query, "variables": variables}
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+    }
+
+    response = requests.post(url, json=body, headers=headers)
+    result = response.json()
+    
+    repositories = result["data"]["user"]["repositories"]["nodes"]
+    total_popularity = 0
+
+    for repo in repositories:
+        total_popularity += 2 * repo["forks"]["totalCount"]
+        total_popularity += repo["watchers"]["totalCount"]
+        total_popularity += repo["stargazers"]["totalCount"]
+
+    popularity_score = round(200 / (1 + math.exp(-0.02 * total_popularity)) - 100)
+
+    # Creating a Gemini instance to query for popularity score feedback
+    gemini = AIQuery()
+    feedback_message = gemini.getNote('software impact', popularity_score)
+
+    return {
+        "score": popularity_score,
+        "feedback": [feedback_message]
+    }
+
+
+def get_user_quality2(username):
+    url = "https://api.github.com/graphql"
+    query = """
+        query userQuality($login: String!) {
+            user(login: $login) {
+                repositories(first: 25, orderBy: {field:PUSHED_AT,direction: DESC}) {
+                    nodes {
+                        name
+                        forks {
+                            totalCount
+                        }
+                        watchers {
+                            totalCount
+                        }
+                        stargazers {
+                            totalCount
+                        }
+                    }
+                }
+            }
+        }
+        """
+    
+    variables = {"login": username}
+
     repos = get_repo_list(username)
     body = {"query": query, "variables": variables}
     headers = {
@@ -176,6 +229,7 @@ def get_user_popularity(username):
         "score": popularity_score,
         "feedback": [feedback_message]
     }
+
 
 def get_user_exerience(username):
     profile_data = get_user_top_languages(username)
@@ -424,4 +478,4 @@ def retrieve_file_from_repo(username, repo, path):
     # print(grades)
 
 if __name__ == "__main__":
-    print(get_user_exerience('ericbuys'))
+    print(get_user_exerience("ericbuys"))

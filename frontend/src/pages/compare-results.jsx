@@ -87,13 +87,31 @@ export function CompareResultsPage() {
         <h1 className="text-4xl font-bold">GitHub Profile Comparison</h1>
 
         {/* <div className="flex h-40 items-end justify-center">
-          <div className="flex h-2/3 w-24 items-center justify-center bg-muted text-xl font-semibold">
+          <div className="relative flex h-2/3 w-24 items-center justify-center bg-muted text-xl font-semibold">
+            <div className="absolute -top-6 mx-auto">
+              <Avatar className="h-12 w-12">
+                <AvatarImage src={comparison?.[1]?.["user_data"]?.avatar_url} />
+                <AvatarFallback />
+              </Avatar>
+            </div>
             2
           </div>
-          <div className="flex h-full w-24 items-center justify-center bg-muted text-xl font-semibold">
+          <div className="relative flex h-full w-24 items-center justify-center bg-muted text-xl font-semibold">
+            <div className="absolute -top-6 mx-auto">
+              <Avatar className="h-12 w-12">
+                <AvatarImage src={comparison?.[0]?.["user_data"]?.avatar_url} />
+                <AvatarFallback />
+              </Avatar>
+            </div>
             1
           </div>
-          <div className="flex h-1/3 w-24 items-center justify-center bg-muted text-xl font-semibold">
+          <div className="relative flex h-1/3 w-24 items-center justify-center bg-muted text-xl font-semibold">
+            <div className="absolute -top-6 mx-auto">
+              <Avatar className="h-12 w-12">
+                <AvatarImage src={comparison?.[2]?.["user_data"]?.avatar_url} />
+                <AvatarFallback />
+              </Avatar>
+            </div>
             3
           </div>
         </div> */}
