@@ -4,10 +4,10 @@ import re
 import json
 
 jsonQueryExample = {
-    "readability": 8,
+    "readability": 5,
     "bestProgrammingPractices": 7,
-    "maintainability": 8,
-    "feedback": "The code looks well documented and commented. Some of the Java code could have better encapsulation."
+    "maintainability": 3,
+    "feedback": "Feedback is written here."
 }
 
 class AIScorer:
@@ -24,10 +24,11 @@ class AIScorer:
         
     # Obtains a JSON response on a variety of grades from Gemini
     def getFeedback(self, stringifiedFiles):
-        query = f"""Score the following code from different files on code readability out of 10, in the format "Readability: a number/10". Than score the following code on best programming practices for the given programming language (such as object-oriented programming if the programming language used is Java, Kotlin, or another OOP language) out of 10, in the format "bestCodingPractices: a number/10". Than score the following code on maintainability out of 10, in the format "Maintainability: a number/10".  Return it as a JSON object in the format of this example:\n {jsonQueryExample}\nThe code to score is:\n {stringifiedFiles}"""
+        query = f"""Score the following code from different files on code readability with an integer, with the maximum value being 10. Then score the following code on best programming practices for the given programming language (such as object-oriented programming if the programming language used is Java, Kotlin, or another OOP language) with an integer, with the maximum value being 10. Than score the following code on maintainability with an integer, with the maximum value being 10. Also provide some general feedback on the code itself in a 'feedback' object -- it should be a maximum of 25 words.  Return it as a JSON object exactly as in this example:\n {jsonQueryExample}\nThe code to score is:\n {stringifiedFiles}"""
 
         feedback = self.llm.generate_content(query)
         feedback = feedback.text
+        
         feedback = self.extract_json(feedback)
 
         return feedback
@@ -36,8 +37,9 @@ class AIScorer:
     def extract_json(self, text_response):
         # This pattern matches a string that starts with '{' and ends with '}'
         pattern = r'\{[^{}]*\}'
+        text = text_response.replace("'", '"')
 
-        matches = re.finditer(pattern, text_response.replace("'", '"'))
+        matches = re.finditer(pattern, text)
         json_objects = []
 
         for match in matches:
