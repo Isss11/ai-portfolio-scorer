@@ -86,17 +86,17 @@ export function CompareResultsPage() {
       <div className="mx-auto flex w-full max-w-[800px] flex-col gap-8 p-10">
         <h1 className="text-4xl font-bold">GitHub Profile Comparison</h1>
 
-        <div className="flex h-32 items-end justify-center">
-          <div className="flex h-2/3 w-12 items-center justify-center bg-muted text-xl font-semibold">
+        {/* <div className="flex h-40 items-end justify-center">
+          <div className="flex h-2/3 w-24 items-center justify-center bg-muted text-xl font-semibold">
             2
           </div>
-          <div className="flex h-full w-12 items-center justify-center bg-muted text-xl font-semibold">
+          <div className="flex h-full w-24 items-center justify-center bg-muted text-xl font-semibold">
             1
           </div>
-          <div className="flex h-1/3 w-12 items-center justify-center bg-muted text-xl font-semibold">
+          <div className="flex h-1/3 w-24 items-center justify-center bg-muted text-xl font-semibold">
             3
           </div>
-        </div>
+        </div> */}
 
         <table className="table-fixed border-separate border-spacing-y-2">
           <thead>
