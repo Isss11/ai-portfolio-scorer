@@ -60,10 +60,24 @@ def compare(usernames_str: str):
         return "Max 10 usernames", 400
 
     user_data = [get_user_info(username) for username in usernames]
-    user_scores = [get_user_quality(username) for username in usernames]
+    user_qual_scores = [get_user_quality(username) for username in usernames]
+    user_exp_scores = [get_user_exerience(username, ai_prompt=False) for username in usernames]
+    user_pop_scores = [get_user_popularity(username, ai_prompt=False) for username in usernames]
+    
+    
+    # print(user_data, user_qual_scores, user_exp_scores, user_pop_scores)
+    tot_user_scores = []
+    # print(usernames)
+    for i in range(len(usernames)):
+        # print(f"{i=}")
+        # print(user_qual_scores[i])
+        # print(user_exp_scores[i])
+        # print(user_pop_scores[i])
+        tot_user_scores.append(round((user_qual_scores[i]["score"] + user_exp_scores[i]["score"] + user_pop_scores[i]["score"]) / 3))
+        # print(user_scores[i])
 
     responseInfo = [
-        {"user_data": user_data[i], "score": user_scores[i]["score"]}
+        {"user_data": user_data[i], "score": tot_user_scores[i]}
         for i in range(len(user_data))
     ]
 

@@ -126,7 +126,7 @@ query userInfo($login: String!) {
     return sorted_langs
 
 
-def get_user_popularity(username):
+def get_user_popularity(username, ai_prompt=True):
     url = "https://api.github.com/graphql"
     query = """
         query userInfo($login: String!) {
@@ -169,9 +169,12 @@ def get_user_popularity(username):
 
     popularity_score = round(200 / (1 + math.exp(-0.02 * total_popularity)) - 100)
 
-    # Creating a Gemini instance to query for popularity score feedback
-    gemini = AIQuery()
-    feedback_message = gemini.getNote("software impact", popularity_score)
+    if ai_prompt:  
+        # Creating a Gemini instance to query for popularity score feedback
+        gemini = AIQuery()
+        feedback_message = gemini.getNote("software impact", popularity_score)
+    else:
+        feedback_message = ""
 
     return {"score": popularity_score, "feedback": [feedback_message]}
 
@@ -227,7 +230,7 @@ def get_user_quality2(username):
     return {"score": popularity_score, "feedback": [feedback_message]}
 
 
-def get_user_exerience(username):
+def get_user_exerience(username, ai_prompt=True):
     profile_data = get_user_top_languages(username)
     total_experience = 0
 
@@ -238,8 +241,11 @@ def get_user_exerience(username):
         (2000000 / (1 + math.exp(-0.0000015 * total_experience)) - 1000000) / 10000
     )
 
-    gemini = AIQuery()
-    note = gemini.getNote("programming experience", experience_score)
+    if ai_prompt:
+        gemini = AIQuery()
+        note = gemini.getNote("programming experience", experience_score)
+    else:
+        note = ""
 
     return {"score": experience_score, "feedback": [note]}
 
