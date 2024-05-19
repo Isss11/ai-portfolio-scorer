@@ -65,7 +65,14 @@ def score(gh_username: str):
 
 
 @app.route("/compare/<usernames_str>", methods=["GET"])
-def score_only(usernames_str: str):
+def compare(usernames_str: str):
     usernames = usernames_str.split(",")
+    if len(usernames) > 30:
+        return "Max 30 usernames", 400
+
+    user_data = [get_user_info(username) for username in usernames]
     time.sleep(1)  # simulate delay
-    return [{}]
+
+    response = [{"user_data": user_data[i]} for i in range(len(user_data))]
+
+    return response
