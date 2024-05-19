@@ -1,7 +1,7 @@
 from flask import json, request
 from pydantic import BaseModel
 from src.app import app
-from src.github import get_user_info, get_user_top_languages, get_repo_list, filter_repos_by_languages, get_files_to_scrape, retrieve_files
+from src.github import get_user_info, get_user_top_languages, get_repo_list, filter_repos_by_languages, get_files_to_scrape, retrieve_files, , get_user_popularity, get_user_exerience
 from src.routes.AIScorer import AIScorer
 from flask_pydantic import validate
 import time
@@ -44,16 +44,9 @@ def score(gh_username: str):
         )
         yield stream_event(
             "message",
-            {"type": "languages", "data": get_user_top_languages(gh_username)},
+            {"type": "languages", "data": get_user_top_languages(gh_username)[:3]},
         )
-        impact_data = {
-            "score": 43,
-            "feedback": [
-                "You have lots of GitHub stars!",
-                "You have a good amount of followers!",
-            ],
-        }
-        yield stream_event("message", {"type": "impact", "data": impact_data})
+        yield stream_event("message", {"type": "impact", "data": get_user_popularity(gh_username)})
         time.sleep(0.2)  # simulate delay
         experience_data = {
             "score": 80,
@@ -62,7 +55,7 @@ def score(gh_username: str):
                 "You have a good amount of experience in Java",
             ],
         }
-        yield stream_event("message", {"type": "experience", "data": experience_data})
+        yield stream_event("message", {"type": "experience", "data": get_user_exerience(gh_username)})
         time.sleep(0.3)  # simulate delay
         quality_data = {
             "score": 21,

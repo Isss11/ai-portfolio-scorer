@@ -69,7 +69,6 @@ def get_user_info(username):
     data = response.json()
     return data
 
-
 # Sourced from https://github.com/anuraghazra/github-readme-stats
 def get_user_top_languages(username):
     url = "https://api.github.com/graphql"
@@ -119,24 +118,92 @@ query userInfo($login: String!) {
     sorted_langs = sorted(lang_sizes.items(), key=lambda x: x[1], reverse=True)
 
     def map_lang(lang):
-        return {"name": lang[0][0], "color": lang[0][1]}
+        return {"name": lang[0][0], "color": lang[0][1], "size": lang[1]}
 
     sorted_langs = list(map(map_lang, sorted_langs))
 
-    return sorted_langs[:3]
+    return sorted_langs
 
 
 def get_user_popularity(username):
+    url = "https://api.github.com/graphql"
+    query = """
+        query userInfo($login: String!) {
+            user(login: $login) {
+                repositories(first: 100) {
+                    nodes {
+                        name
+                        forks {
+                            totalCount
+                        }
+                        watchers {
+                            totalCount
+                        }
+                        stargazers {
+                            totalCount
+                        }
+                    }
+                }
+            }
+        }
+        """
+    
+    variables = {"login": username}
+
     repos = get_repo_list(username)
+    body = {"query": query, "variables": variables}
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+    }
 
+    response = requests.post(url, json=body, headers=headers)
+    result = response.json()
+    
+    repositories = result["data"]["user"]["repositories"]["nodes"]
     total_popularity = 0
-    for repo in repos:
-        total_popularity += repo["popularity"]
 
-    popularity_score = 200 / (1 + math.exp(-0.01 * total_popularity)) - 100
+    for repo in repositories:
+        total_popularity += 2 * repo["forks"]["totalCount"]
+        total_popularity += repo["watchers"]["totalCount"]
+        total_popularity += repo["stargazers"]["totalCount"]
 
-    return {"score": popularity_score}
+    popularity_score = round(200 / (1 + math.exp(-0.02 * total_popularity)) - 100)
 
+    # if popularity_score <= 20:
+    #     feedback_message = f"Your GitHub journey is just beginning. Every star counts, and you're on your way to making an impact. Keep coding and sharing your projects!"
+    # elif popularity_score <= 40:
+    #     feedback_message = "Nice progress! Your contributions are starting to get noticed. Keep up the good work and continue to share your innovations."
+    # elif popularity_score <= 60:
+    #     feedback_message = "Great job! Your projects are gaining recognition and making a mark in the community. Keep pushing your boundaries and building awesome stuff."
+    # elif popularity_score <= 80:
+    #     feedback_message = "Impressive! Your GitHub profile is attracting a solid following. Your hard work is paying off and resonating with others."
+    # else:
+    #     feedback_message = "Fantastic achievement! Your profile is gaining significant popularity. Your dedication and skills are truly appreciated by the community. Keep up the excellent work!"
+
+    return {
+        "score": popularity_score,
+        "feedback": [total_popularity]
+    }
+
+def get_user_exerience(username):    
+    profile_data = get_user_top_languages(username)
+    total_experience = 0
+
+    for lang in profile_data:
+        total_experience += lang['size']
+
+    experience_score = round((2000000 / (1 + math.exp(-0.0000015 * total_experience)) - 1000000) / 10000)
+    print(total_experience)
+    
+    return {
+        "score": experience_score,
+        "feedback": [f"{total_experience}"]
+    }
+
+def get_user_quality(username):
+    top_three_languages = get_user_top_languages(username)
+    print(top_three_languages)
+    
 
 def get_all_user_repos(username):
     url = f"https://api.github.com/users/{username}/repos"
@@ -313,32 +380,36 @@ def retrieve_file_from_repo(username, repo, path):
         return None
 
 
+# if __name__ == "__main__":
+#     get_user_quality('benawad')
+    # if GITHUB_TOKEN is None:
+    #     print("Error: GITHUB_TOKEN environment variable not set")
+    #     exit()
+
+    # # Get username
+    # # github_profile_url = "https://github.com/Isss11"
+    # # github_profile_url = "https://github.com/joelharder4?tab=repositories"
+    # # github_profile_url = "https://github.com/wiwichips?page=1&tab=repositories"
+    # username = "ericbuys"
+    # languages = ["Python", "HTML"]
+
+    # # Get repos
+    # repos = get_repo_list(username)
+    # language_repo_dict = filter_repos_by_languages(username, repos, languages, limit=1)
+    # print(f"{language_repo_dict=}")
+
+    # # Get file content
+    # files = get_files_to_scrape(username, language_repo_dict)
+    # print(f"{files=}")
+    # file_content = retrieve_files(username, files)
+    # print(f"{file_content=}")
+
+    # # Scoring the stringified files
+    # scorer = AIScorer()
+    # stringifiedFiles = scorer.getStringifiedFiles(file_content)
+    # grades = scorer.getFeedback(stringifiedFiles)
+
+    # print(grades)
+
 if __name__ == "__main__":
-    if GITHUB_TOKEN is None:
-        print("Error: GITHUB_TOKEN environment variable not set")
-        exit()
-
-    # Get username
-    # github_profile_url = "https://github.com/Isss11"
-    # github_profile_url = "https://github.com/joelharder4?tab=repositories"
-    # github_profile_url = "https://github.com/wiwichips?page=1&tab=repositories"
-    username = "ericbuys"
-    languages = ["Python", "HTML"]
-
-    # Get repos
-    repos = get_repo_list(username)
-    language_repo_dict = filter_repos_by_languages(username, repos, languages, limit=1)
-    print(f"{language_repo_dict=}")
-
-    # Get file content
-    files = get_files_to_scrape(username, language_repo_dict)
-    print(f"{files=}")
-    file_content = retrieve_files(username, files)
-    print(f"{file_content=}")
-
-    # Scoring the stringified files
-    scorer = AIScorer()
-    stringifiedFiles = scorer.getStringifiedFiles(file_content)
-    grades = scorer.getFeedback(stringifiedFiles)
-
-    print(grades)
+    get_user_popularity('ericbuys')
