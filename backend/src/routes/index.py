@@ -1,7 +1,7 @@
 from flask import json
 from pydantic import BaseModel
 from src.app import app
-from src.github import get_user_info
+from src.github import get_user_info, get_user_top_languages
 from flask_pydantic import validate
 import time
 
@@ -27,7 +27,10 @@ def score(gh_username: str):
         yield stream_event(
             "message", {"type": "metadata", "data": get_user_info(gh_username)}
         )
-        time.sleep(0.5)  # simulate delay
+        yield stream_event(
+            "message",
+            {"type": "languages", "data": get_user_top_languages(gh_username)},
+        )
         impact_data = {
             "score": 43,
             "feedback": [
